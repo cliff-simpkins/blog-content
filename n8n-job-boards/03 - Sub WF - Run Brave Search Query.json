@@ -1,0 +1,228 @@
+{
+  "name": "Sub WF - Run Brave Search Query",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Get input from parent workflow\nconst input = $input.first().json;\n\nconst query = input.query ||  \"(intitle:\\\"roleTitle\\\") AND inpage:\\\"termOnPage\\\" AND NOT intitle:\\\"notRoleTitle\\\")\";\n\n\n// Use siteSearch from input, with fallback\n// const siteSearch = \"site:\" + (input.siteSearch || \"ashbyhq.com\") + \" \";\n// const siteSearch = \"site:\" + (input.siteSearch || \"greenhouse.io\") + \" \";\n// const siteSearch = \"site:\" + (input.siteSearch || \"lever.co\") + \" \";\n const siteSearch = \"site:\" + (input.siteSearch || \"myworkdayjobs.com\") + \" \";\n\n// Set initial values\nreturn [{\n  json: {\n    query: siteSearch + query,\n    offset: 0,\n    allResults: [],\n    hasMoreResults: true,\n    totalResults: 0,\n    inputData: input // Store original input for reference\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        544
+      ],
+      "id": "ca021e05-b94d-4cae-a6d3-a80526c9ab13",
+      "name": "Initialize with Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the current search response\nconst currentData = $input.first().json;\nconst items = currentData.web.results || [];\nconst searchInfo = currentData.searchInformation || {};\nconst totalResults = parseInt(searchInfo.totalResults) || 0;\n\n// Get static values from Initialize (never change)\nconst initData = $(\"Initialize with Input\").first().json;\n\n// Get dynamic state: try from previous Process Results, fallback to Initialize\nlet allResults, currentOffset, inputData;\n\nif (($('Process Results').isExecuted)) {\n  \n    // Get accumulated state from previous Process Results iteration\n    const lastResults = $(\"Process Results\").first().json;\n  \n    allResults = lastResults.allResults || [];\n    currentOffset = lastResults.offset || 0;\n} else {\n    // First iteration - use initial values\n    allResults = initData.allResults || [];\n    currentOffset = initData.offset || 0;\n}\n\n// Add NEW results to existing collection\nallResults = allResults.concat(items);\n\n// Calculate next iteration\nconst nextOffset = currentOffset + 1;\nconst hasMoreResults = $input.first().json.query.more_results_available;\n\nconsole.log(`Page ${currentOffset}: Added ${items.length} results. Total: ${allResults.length}`);\n\nreturn [{\n  json: {\n    start: nextOffset,\n    allResults: allResults, // Now accumulates properly!\n    hasMoreResults: hasMoreResults,\n    totalResults: totalResults,\n    offset: currentOffset + 1,\n    currentBatchSize: items.length,\n    totalCollected: allResults.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        544
+      ],
+      "id": "ba0f97cb-5c1c-4f56-bfa6-1199ed9935f0",
+      "name": "Process Results"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "continue-condition",
+              "leftValue": "={{ $json.hasMoreResults }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        224,
+        544
+      ],
+      "id": "4082ba25-376c-494e-b7f7-acfe0e61afd4",
+      "name": "Should Continue?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare final output for parent workflow\nconst finalData = $input.first().json;\n\n// Return the results in a format expected by parent workflow\nreturn [{\n  json: {\n    success: true,\n    siteSearch: finalData.siteSearch,\n    searchSummary: {\n      totalResultsFound: finalData.totalResults,\n      totalResultsCollected: finalData.totalCollected,\n      pagesProcessed: finalData.currentPage - 1,\n      query: finalData.query,\n      siteSearch: finalData.siteSearch\n    },\n    allResults: finalData.allResults,\n    originalInput: finalData.inputData\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        560
+      ],
+      "id": "7eae4b0f-b225-4111-9742-04e494401ae0",
+      "name": "Prepare Output"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        400
+      ],
+      "id": "117629a0-4e5d-4ab9-a6f0-8919f752c802",
+      "name": "Rate Limit Wait",
+      "webhookId": "6c1a15c4-fdfa-4e9e-aec5-44ef3d1960e3"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "siteSearch"
+            },
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -496,
+        544
+      ],
+      "id": "1b774395-a340-45ab-8365-30bb4b774991",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "query": "={{ $('Initialize with Input').first().json.query }}",
+        "count": 20,
+        "additionalParameters": {
+          "offset": "={{ $if($('Process Results').isExecuted, $('Process Results').last().json.offset, \"0\") }}"
+        }
+      },
+      "type": "@brave/n8n-nodes-brave-search.braveSearch",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        544
+      ],
+      "id": "52bdb152-9397-48a8-b254-8a3cd8acde2c",
+      "name": "Brave Search",
+      "alwaysOutputData": false,
+      "credentials": {
+        "braveSearchApi": {
+          "id": "idNumber",
+          "name": "Brave Search account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Initialize with Input": {
+      "main": [
+        [
+          {
+            "node": "Brave Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Results": {
+      "main": [
+        [
+          {
+            "node": "Should Continue?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Continue?": {
+      "main": [
+        [
+          {
+            "node": "Rate Limit Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limit Wait": {
+      "main": [
+        [
+          {
+            "node": "Brave Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Output": {
+      "main": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Initialize with Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brave Search": {
+      "main": [
+        [
+          {
+            "node": "Process Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "357f0a1f-28b8-4da0-9b3b-d63edc490f22",
+  "meta": {
+    "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
+  },
+  "id": "wPonEanWkKtPqPeR",
+  "tags": []
+}

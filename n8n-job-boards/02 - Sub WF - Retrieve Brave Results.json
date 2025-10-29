@@ -1,0 +1,769 @@
+{
+  "name": "Sub WF - Retrieve Brave Results",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        192
+      ],
+      "id": "fe8262a2-9ce3-4b2b-b302-a05d109c2c9b",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "requestId",
+              "name": "query",
+              "value": "(intitle:\"roleTitle\" OR intitle:\"roleTitle\") AND inpage:\"requiredTermInJD\" AND NOT intitle:\"notRoleTitle\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        48
+      ],
+      "id": "1d2a0760-9ad6-4f21-8cd3-476c719f9c40",
+      "name": "Set Search Parameters"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "searchResults",
+              "name": "searchResults",
+              "value": "={{ $json.allResults }}",
+              "type": "array"
+            },
+            {
+              "id": "resultCount",
+              "name": "resultCount",
+              "value": "={{ $json.allResults.length }}",
+              "type": "number"
+            },
+            {
+              "id": "searchSummary",
+              "name": "searchSummary",
+              "value": "={{ $json.searchSummary }}",
+              "type": "object"
+            },
+            {
+              "id": "siteSearched",
+              "name": "siteSearched",
+              "value": "={{ $json.siteSearch }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -288
+      ],
+      "id": "093abf7f-d137-49e2-9a1f-21c3ec8af9f2",
+      "name": "Process Search Results"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "searchResults",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -288
+      ],
+      "id": "ab4e61f5-19ae-4c9e-ae35-ba8e95e080bb",
+      "name": "Split Individual Results"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wPonEanWkKtPqPeR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "03 - Sub WF - Run Brave Search Query"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "siteSearch": "greenhouse.io",
+            "query": "={{ $json.query }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "siteSearch",
+              "displayName": "siteSearch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        -288
+      ],
+      "id": "53a1af8f-e642-4940-91bf-d7eb12e0f759",
+      "name": "Search - Greenhouse"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        -64
+      ],
+      "id": "05ee48ef-d833-4f64-9026-6dfe4a2d384f",
+      "name": "Ashby Pause",
+      "webhookId": "84c832d9-6ca7-4451-901b-38c346337f45"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        128
+      ],
+      "id": "c725325b-d189-466e-8ec5-12a28986162e",
+      "name": "Lever Pause",
+      "webhookId": "3159f1e8-83ff-4c57-bafa-0270b8a24e95"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        304
+      ],
+      "id": "583811fc-6c76-4f53-9757-31fa5b2f688a",
+      "name": "Workday Pause",
+      "webhookId": "b95f2b40-ba0a-475f-bce7-3bb8f225a0c0"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wPonEanWkKtPqPeR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "03 - Sub WF - Run Brave Search Query"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "siteSearch": "ashbyhq.com",
+            "query": "={{ $json.query }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "siteSearch",
+              "displayName": "siteSearch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        -64
+      ],
+      "id": "cbc37844-2592-49ea-aa63-4034ac2b872f",
+      "name": "Search - Ashby"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wPonEanWkKtPqPeR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "03 - Sub WF - Run Brave Search Query"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "siteSearch": "lever.co",
+            "query": "={{ $json.query }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "siteSearch",
+              "displayName": "siteSearch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        128
+      ],
+      "id": "5b0d5c0d-ac99-44e7-b272-bc9e8185fd77",
+      "name": "Search - Lever"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wPonEanWkKtPqPeR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "03 - Sub WF - Run Brave Search Query"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "siteSearch": "myworkdayjobs.com",
+            "query": "={{ $json.query }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "siteSearch",
+              "displayName": "siteSearch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        304
+      ],
+      "id": "07836472-e332-4518-9d51-f2555bd54638",
+      "name": "Search - Workday"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "searchResults",
+              "name": "searchResults",
+              "value": "={{ $json.allResults }}",
+              "type": "array"
+            },
+            {
+              "id": "resultCount",
+              "name": "resultCount",
+              "value": "={{ $json.allResults.length }}",
+              "type": "number"
+            },
+            {
+              "id": "searchSummary",
+              "name": "searchSummary",
+              "value": "={{ $json.searchSummary }}",
+              "type": "object"
+            },
+            {
+              "id": "siteSearched",
+              "name": "siteSearched",
+              "value": "={{ $json.siteSearch }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -64
+      ],
+      "id": "9ca3671f-92af-4704-b1fb-e1b57a187c7d",
+      "name": "Process Search Results1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "searchResults",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -64
+      ],
+      "id": "bbf88c47-aa4e-4207-93a8-ff4d0ffd7637",
+      "name": "Split Individual Results1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "searchResults",
+              "name": "searchResults",
+              "value": "={{ $json.allResults }}",
+              "type": "array"
+            },
+            {
+              "id": "resultCount",
+              "name": "resultCount",
+              "value": "={{ $json.allResults.length }}",
+              "type": "number"
+            },
+            {
+              "id": "searchSummary",
+              "name": "searchSummary",
+              "value": "={{ $json.searchSummary }}",
+              "type": "object"
+            },
+            {
+              "id": "siteSearched",
+              "name": "siteSearched",
+              "value": "={{ $json.siteSearch }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        128
+      ],
+      "id": "597a1468-f599-4df8-af19-4a4b6443c9c8",
+      "name": "Process Search Results2"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "searchResults",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        560,
+        128
+      ],
+      "id": "a72a8031-7ae2-4ec6-94e8-428f12113179",
+      "name": "Split Individual Results2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "searchResults",
+              "name": "searchResults",
+              "value": "={{ $json.allResults }}",
+              "type": "array"
+            },
+            {
+              "id": "resultCount",
+              "name": "resultCount",
+              "value": "={{ $json.allResults.length }}",
+              "type": "number"
+            },
+            {
+              "id": "searchSummary",
+              "name": "searchSummary",
+              "value": "={{ $json.searchSummary }}",
+              "type": "object"
+            },
+            {
+              "id": "siteSearched",
+              "name": "siteSearched",
+              "value": "={{ $json.siteSearch }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        304
+      ],
+      "id": "b29b26fd-93b3-4120-a04d-4d01df1539e8",
+      "name": "Process Search Results3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "searchResults",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        560,
+        304
+      ],
+      "id": "88593403-0fd8-4edc-8f7a-dcb60160d4bf",
+      "name": "Split Individual Results3"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        864,
+        64
+      ],
+      "id": "981092b0-8ad5-442c-8d14-4e3d72059ba9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "noop"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        -144
+      ],
+      "id": "08edeba3-1e18-4757-8481-043125f356c0",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Search Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Search Parameters": {
+      "main": [
+        [
+          {
+            "node": "Search - Greenhouse",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ashby Pause",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lever Pause",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Workday Pause",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Search Results": {
+      "main": [
+        [
+          {
+            "node": "Split Individual Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Individual Results": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search - Greenhouse": {
+      "main": [
+        [
+          {
+            "node": "Process Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ashby Pause": {
+      "main": [
+        [
+          {
+            "node": "Search - Ashby",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lever Pause": {
+      "main": [
+        [
+          {
+            "node": "Search - Lever",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workday Pause": {
+      "main": [
+        [
+          {
+            "node": "Search - Workday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Search Results1": {
+      "main": [
+        [
+          {
+            "node": "Split Individual Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Search Results2": {
+      "main": [
+        [
+          {
+            "node": "Split Individual Results2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Search Results3": {
+      "main": [
+        [
+          {
+            "node": "Split Individual Results3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search - Ashby": {
+      "main": [
+        [
+          {
+            "node": "Process Search Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search - Lever": {
+      "main": [
+        [
+          {
+            "node": "Process Search Results2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search - Workday": {
+      "main": [
+        [
+          {
+            "node": "Process Search Results3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Individual Results1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Split Individual Results2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Split Individual Results3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Search Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "73c6f187-e797-4a4b-b21b-302e9853cfb8",
+  "meta": {
+    "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
+  },
+  "id": "dKUB9CouRHXP59Vi",
+  "tags": []
+}

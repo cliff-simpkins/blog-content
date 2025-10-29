@@ -1,0 +1,247 @@
+{
+  "name": "Sub WF - Run Google Search Query",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Get input from parent workflow\nconst input = $input.first().json;\n\n// Initialize variables for pagination with input from parent\nconst baseUrl = \"https://www.googleapis.com/customsearch/v1\";\nconst cx = \"cxIdNumber\";\nconst query = input.query ||  \"(intitle:\\\"roleTitle1\\\" OR intitle:\\\"roleTitle2\\\") AND intext:onPageText\";\n\n// Use siteSearch from input, with fallback\nconst siteSearch = input.siteSearch || \"ashbyhq.com\";\n\n// Set initial values\nreturn [{\n  json: {\n    cx: cx,\n    query: query,\n    siteSearch: siteSearch,\n    start: 1,\n    allResults: [],\n    hasMoreResults: true,\n    totalResults: 0,\n    currentPage: 1,\n    inputData: input // Store original input for reference\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        544
+      ],
+      "id": "bc652353-c902-43cd-a936-16ec471e6afe",
+      "name": "Initialize with Input"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "yourGoogleApiKey"
+            },
+            {
+              "name": "q",
+              "value": "={{ $('Initialize with Input').first().json.query }}"
+            },
+            {
+              "name": "cx",
+              "value": "={{ $('Initialize with Input').first().json.cx }}"
+            },
+            {
+              "name": "siteSearch",
+              "value": "={{ $('Initialize with Input').first().json.siteSearch }}"
+            },
+            {
+              "name": "siteSearchFilter",
+              "value": "i"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.start }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -112,
+        544
+      ],
+      "id": "6cd9e1e3-fbf0-49c5-ab3b-db5da3621d94",
+      "name": "Google Search Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the current search response\nconst currentData = $input.first().json;\nconst items = currentData.items || [];\nconst searchInfo = currentData.searchInformation || {};\nconst totalResults = parseInt(searchInfo.totalResults) || 0;\nconst resultsPerPage = 10;\n\n\n// Get static values from Initialize (never change)\nconst initData = $(\"Initialize with Input\").first().json;\n\n// Get dynamic state: try from previous Process Results, fallback to Initialize\nlet allResults, currentStart, currentPage, inputData;\n\nif (($('Process Results').isExecuted)) {\n  \n    // Get accumulated state from previous Process Results iteration\n    const lastResults = $(\"Process Results\").first().json;\n  \n    allResults = lastResults.allResults || [];\n    currentStart = lastResults.start || 1;\n    currentPage = lastResults.currentPage || 1;\n} else {\n    // First iteration - use initial values\n    allResults = initData.allResults || [];\n    currentStart = initData.start || 1;\n    currentPage = initData.currentPage || 1;\n}\n\n// ✅ FIX: Get accumulated state from the data that was sent to HTTP request\n//const previousState = $(\"Google Search Request\").first().json;\n//\n// Get the existing accumulated results\n//let allResults = previousState.allResults || [];\n//let currentStart = previousState.start || 1;\n//let currentPage = previousState.currentPage || 1;\n\n// Add NEW results to existing collection\nallResults = allResults.concat(items);\n\n// Calculate next iteration\nconst nextStart = currentStart + resultsPerPage;\nconst hasMoreResults = nextStart <= Math.min(totalResults, 100) && items.length === resultsPerPage;\nconst shouldContinue = hasMoreResults && allResults.length < 100;\n\nconsole.log(`Page ${currentPage}: Added ${items.length} results. Total: ${allResults.length}`);\n\nreturn [{\n  json: {\n    start: nextStart,\n    allResults: allResults, // Now accumulates properly!\n    hasMoreResults: shouldContinue,\n    totalResults: totalResults,\n    currentPage: currentPage + 1,\n    currentBatchSize: items.length,\n    totalCollected: allResults.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        544
+      ],
+      "id": "4a6e9fcb-993e-45a6-b457-b3b5bbe2c337",
+      "name": "Process Results"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "continue-condition",
+              "leftValue": "={{ $json.hasMoreResults }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        224,
+        544
+      ],
+      "id": "c1684264-762c-453e-9d65-4af439687787",
+      "name": "Should Continue?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare final output for parent workflow\nconst finalData = $input.first().json;\n\n// Return the results in a format expected by parent workflow\nreturn [{\n  json: {\n    success: true,\n    siteSearch: finalData.siteSearch,\n    searchSummary: {\n      totalResultsFound: finalData.totalResults,\n      totalResultsCollected: finalData.totalCollected,\n      pagesProcessed: finalData.currentPage - 1,\n      query: finalData.query,\n      siteSearch: finalData.siteSearch\n    },\n    allResults: finalData.allResults,\n    originalInput: finalData.inputData\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        560
+      ],
+      "id": "bc653dfb-a375-446c-8580-cde7243eb1f6",
+      "name": "Prepare Output"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        400
+      ],
+      "id": "cb170712-e536-45bf-8b50-ca54b5d64622",
+      "name": "Rate Limit Wait",
+      "webhookId": "176bd37b-6b03-4041-9ae2-2d2b118ec319"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "siteSearch"
+            },
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -496,
+        544
+      ],
+      "id": "63400565-237c-455a-b605-786dcd7e90d1",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Initialize with Input": {
+      "main": [
+        [
+          {
+            "node": "Google Search Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search Request": {
+      "main": [
+        [
+          {
+            "node": "Process Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Results": {
+      "main": [
+        [
+          {
+            "node": "Should Continue?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Continue?": {
+      "main": [
+        [
+          {
+            "node": "Rate Limit Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limit Wait": {
+      "main": [
+        [
+          {
+            "node": "Google Search Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Output": {
+      "main": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Initialize with Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d1dc7d4e-2508-4114-bce0-4883eb4e0d64",
+  "meta": {
+    "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
+  },
+  "id": "aQ1WS84f3zOKjFUD",
+  "tags": []
+}

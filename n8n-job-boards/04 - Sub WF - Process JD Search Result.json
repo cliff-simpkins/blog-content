@@ -1,0 +1,2081 @@
+{
+  "name": "Sub WF- Process JD Search Result",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "url"
+            },
+            {
+              "name": "pageTitle"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2112,
+        -64
+      ],
+      "id": "f13cd698-6393-4675-8aad-cfead887acc9",
+      "name": "When Executed by Another Workflow",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        368
+      ],
+      "id": "1ad5d743-a461-4a87-8edc-009be118f52a",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        160
+      ],
+      "id": "00fc7dae-e165-4690-a529-eea0dfa12cd4",
+      "name": "Cleanup JSON"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "587de1a7-58a8-40b6-8c7c-6c3f1885b874",
+              "name": "ExistingFound",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "259fb8a4-fc8a-4432-a1fc-2951c5055579",
+              "name": "NewAdded",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "50b761c9-a803-436a-915d-b1b1e15e5b63",
+              "name": "InputTokensUsed",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "8138b6ac-ac3e-42d3-b88f-2bfe3493faba",
+              "name": "OutputTokensUsed",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "9c5faf7a-9f5b-42ae-a874-ca67749437c5",
+              "name": "AddedPosting",
+              "value": "\"\"",
+              "type": "string"
+            },
+            {
+              "id": "d4c7293c-a223-4670-976b-136ca03f69a9",
+              "name": "Relevant",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "d57285e6-cfe3-468e-8cb8-8523afd676a2",
+              "name": "Error",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        -96
+      ],
+      "id": "12c69d3c-3db7-42ab-b260-16bdd8453708",
+      "name": "Return_Existing"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        176
+      ],
+      "id": "ff813c6f-d5cc-408b-957c-c9010fbac61b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da21e662-e144-4978-88d9-56c774f90db5",
+              "name": "url",
+              "value": "https://jobboard.com/jobId",
+              "type": "string"
+            },
+            {
+              "id": "07cd3417-59fc-4c47-b515-63a1d611776e",
+              "name": "pageTitle",
+              "value": "Unknown - test data",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1952,
+        176
+      ],
+      "id": "b330b2c7-1888-4623-adc0-529ce1768d15",
+      "name": "Set Proxy Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "587de1a7-58a8-40b6-8c7c-6c3f1885b874",
+              "name": "ExistingFound",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "259fb8a4-fc8a-4432-a1fc-2951c5055579",
+              "name": "NewAdded",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "50b761c9-a803-436a-915d-b1b1e15e5b63",
+              "name": "InputTokensUsed",
+              "value": "={{ $('Analyze Job Posting').item.json.usage.input_tokens }}",
+              "type": "number"
+            },
+            {
+              "id": "8138b6ac-ac3e-42d3-b88f-2bfe3493faba",
+              "name": "OutputTokensUsed",
+              "value": "={{ $('Analyze Job Posting').item.json.usage.output_tokens }}",
+              "type": "number"
+            },
+            {
+              "id": "c9012125-4aff-4de2-a960-deae7db8d9b7",
+              "name": "AddedPosting",
+              "value": "={{ $('Cleanup JSON').item.json.job_title + \" (\" + $('Cleanup JSON').item.json.company + \")  - \" + $('Cleanup JSON').item.json.reasoning}}",
+              "type": "string"
+            },
+            {
+              "id": "8fb354c1-a0d0-4cb6-a8b0-f6eaab40e691",
+              "name": "Relevant",
+              "value": "={{ $('Cleanup JSON').item.json.relevant }}",
+              "type": "boolean"
+            },
+            {
+              "id": "bb0b6125-a35c-4acb-a40b-54a67b4a59bc",
+              "name": "Error",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        160
+      ],
+      "id": "11402799-eaf3-4c4f-97fb-1e65876440a9",
+      "name": "Return_New"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "587de1a7-58a8-40b6-8c7c-6c3f1885b874",
+              "name": "ExistingFound",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "259fb8a4-fc8a-4432-a1fc-2951c5055579",
+              "name": "NewAdded",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "50b761c9-a803-436a-915d-b1b1e15e5b63",
+              "name": "InputTokensUsed",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "8138b6ac-ac3e-42d3-b88f-2bfe3493faba",
+              "name": "OutputTokensUsed",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "9c5faf7a-9f5b-42ae-a874-ca67749437c5",
+              "name": "AddedPosting",
+              "value": "\"\"",
+              "type": "string"
+            },
+            {
+              "id": "d4c7293c-a223-4670-976b-136ca03f69a9",
+              "name": "Relevant",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "7c3e16a8-3712-42b4-9e8e-56b5ba80c0eb",
+              "name": "Error",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        368
+      ],
+      "id": "d975081b-e13c-4889-be6e-f615b544bc5c",
+      "name": "Return_Error"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Normalize URL').first().json.normalizedUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1664,
+        192
+      ],
+      "id": "330ed4e7-7165-4132-a3ad-41bc0a2a26bd",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "alwaysOutputData": true,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the HTML from the HTTP Request node\nconst html = $input.first().json.data;\n\n// Get the URL from the previous normalization node\nlet url = $('Normalize URL').first().json.normalizedUrl || \n          $('Normalize URL').first().json.url ||\n          $input.first().json.url;\n\n// If still not found, try to get from any previous node\nif (!url) {\n  const allItems = $input.all();\n  for (const item of allItems) {\n    if (item.json.normalizedUrl) {\n      url = item.json.normalizedUrl;\n      break;\n    }\n    if (item.json.url) {\n      url = item.json.url;\n      break;\n    }\n  }\n}\n\n// Detect platform from URL first (before checking HTML)\nlet platformFromUrl = 'Unknown';\nif (url) {\n  if (url.includes('greenhouse.io') || url.includes('gh_jid=') || url.includes('gh_src=')) {\n    platformFromUrl = 'Greenhouse';\n  } else if (url.includes('ashbyhq.com')) {\n    platformFromUrl = 'Ashby';\n  } else if (url.includes('myworkdayjobs.com') || url.includes('workday.com')) {\n    platformFromUrl = 'Workday';\n  } else if (url.includes('lever.co')) {\n    platformFromUrl = 'Lever';\n  }\n}\n\n// Safety check: if html is undefined or empty, return null values but include platform\nif (!html || html.length === 0) {\n  return {\n    url: url,\n    jobTitle: null,\n    jobDescription: null,\n    platform: platformFromUrl,\n    error: 'Failed to fetch HTML content'\n  };\n}\n\nlet jobTitle = null;\nlet jobDescription = null;\n\n// Detect platform by fingerprints (refine detection with HTML content)\nconst hasGhJid = url ? (url.includes('gh_jid=') || url.includes('gh_src=')) : false;\nconst hasGreenhouseData = html.includes('window.GREENHOUSE_DATA') || html.includes('greenhouse.io');\nconst hasAshbyData = html.includes('window.__ASHBY_JOB_POSTING_APP__') || html.includes('ashbyhq.com');\nconst hasWorkdayData = html.includes('myworkdayjobs.com') || html.includes('workday.com/wday');\nconst hasLeverData = html.includes('window._LEVER_STATE') || html.includes('lever.co');\n\nconst isGreenhouse = hasGhJid || hasGreenhouseData || (url && url.includes('greenhouse.io'));\nconst isAshby = hasAshbyData || (url && url.includes('ashbyhq.com'));\nconst isWorkday = hasWorkdayData || (url && url.includes('myworkdayjobs.com'));\nconst isLever = hasLeverData || (url && url.includes('lever.co'));\n\n// === IMPROVED GREENHOUSE EXTRACTION ===\nif (isGreenhouse) {\n  // Method 1: Try Greenhouse JSON data\n  const ghDataMatch = html.match(/window\\.GREENHOUSE_DATA\\s*=\\s*({.*?});/s);\n  if (ghDataMatch) {\n    try {\n      const ghData = JSON.parse(ghDataMatch[1]);\n      jobTitle = ghData.title || ghData.name;\n      jobDescription = ghData.content || ghData.description;\n    } catch (e) {\n      console.log('Failed to parse GREENHOUSE_DATA:', e);\n    }\n  }\n  \n  // Method 2: Try different Greenhouse data patterns\n  if (!jobTitle || !jobDescription) {\n    const patterns = [\n      /window\\.gon\\s*=\\s*({.*?});/s,\n      /window\\.GreenhouseConfig\\s*=\\s*({.*?});/s,\n      /window\\.jobPostingData\\s*=\\s*({.*?});/s\n    ];\n    \n    for (const pattern of patterns) {\n      const match = html.match(pattern);\n      if (match) {\n        try {\n          const data = JSON.parse(match[1]);\n          jobTitle = jobTitle || data.title || data.name || data.job?.title;\n          jobDescription = jobDescription || data.content || data.description || data.job?.description;\n        } catch (e) {}\n      }\n    }\n  }\n  \n  // Method 3: Extract job title from HTML\n  if (!jobTitle) {\n    const titleSelectors = [\n      // Specific to the HTML structure you provided\n      /<h1[^>]*class=\"[^\"]*section-header[^\"]*\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"app-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"posting-headline\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"job-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*id=\"job-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*>(.*?)<\\/h1>/s\n    ];\n    \n    for (const selector of titleSelectors) {\n      const match = html.match(selector);\n      if (match) {\n        jobTitle = match[1].replace(/<[^>]*>/g, '').trim();\n        if (jobTitle && jobTitle.length > 3) break;\n      }\n    }\n  }\n  \n  // Method 4: Extract job description from HTML - UPDATED for your structure\n  if (!jobDescription) {\n    const descriptionSelectors = [\n      // Specific to the HTML structure you provided\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<\\/div>\\s*<div[^>]*class=\"job-alert/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<div[^>]*class=\"divider\"/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<div[^>]*class=\"application--container\"/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<\\/div>/s,\n      \n      // Other common Greenhouse patterns\n      /<div[^>]*id=\"content\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"section-wrapper\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"posting-content\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"job-post-content\"[^>]*>(.*?)<\\/div>/s,\n      \n      // Look for multiple content sections\n      /<section[^>]*class=\"section\"[^>]*>(.*?)<\\/section>/gs,\n      /<div[^>]*class=\"section\"[^>]*>(.*?)<\\/div>/gs,\n      \n      // Broader content area\n      /<main[^>]*>(.*?)<\\/main>/s,\n      /<article[^>]*>(.*?)<\\/article>/s\n    ];\n    \n    for (const selector of descriptionSelectors) {\n      const match = html.match(selector);\n      if (match) {\n        let content = match[1].trim();\n        \n        // If using global flag, get all matches and concatenate\n        if (selector.flags && selector.flags.includes('g')) {\n          const allMatches = html.match(selector);\n          if (allMatches && allMatches.length > 0) {\n            content = allMatches.map(m => \n              m.replace(/<section[^>]*class=\"section\"[^>]*>|<\\/section>/g, '')\n               .replace(/<div[^>]*class=\"section\"[^>]*>|<\\/div>/g, '')\n            ).join('\\n\\n');\n          }\n        }\n        \n        // Clean up common unwanted content\n        content = content.replace(/<form[^>]*>.*?<\\/form>/gs, ''); // Remove application forms\n        content = content.replace(/<div[^>]*class=\"[^\"]*eeoc[^\"]*\"[^>]*>.*?<\\/div>/gs, ''); // Remove EEOC sections\n        \n        // Filter out if it's too short (likely just location or other metadata)\n        if (content && content.length > 200) { // Increased threshold\n          jobDescription = content;\n          break;\n        }\n      }\n    }\n  }\n}\n\n// === ASHBY EXTRACTION ===\nif (isAshby) {\n  // Try Ashby app data\n  const ashbyMatch = html.match(/window\\.__ASHBY_JOB_POSTING_APP__\\s*=\\s*({.*?});/s);\n  if (ashbyMatch) {\n    try {\n      const appData = JSON.parse(ashbyMatch[1]);\n      jobTitle = appData.jobPosting?.title;\n      jobDescription = appData.jobPosting?.descriptionHtml || appData.jobPosting?.description;\n    } catch (e) {}\n  }\n}\n\n// === WORKDAY EXTRACTION ===\nif (isWorkday) {\n  // Workday uses JSON-LD\n  const jsonLdMatches = html.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/gs);\n  if (jsonLdMatches) {\n    for (const match of jsonLdMatches) {\n      try {\n        const content = match.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/s)[1];\n        const jsonLd = JSON.parse(content);\n        if (jsonLd['@type'] === 'JobPosting') {\n          jobTitle = jsonLd.title;\n          jobDescription = jsonLd.description;\n          break;\n        }\n      } catch (e) {}\n    }\n  }\n}\n\n// === LEVER EXTRACTION ===\nif (isLever) {\n  // Try Lever's data structure\n  const leverMatch = html.match(/window\\._LEVER_STATE\\s*=\\s*({.*?});/s);\n  if (leverMatch) {\n    try {\n      const leverData = JSON.parse(leverMatch[1]);\n      jobTitle = leverData.posting?.text;\n      jobDescription = leverData.posting?.descriptionHtml || leverData.posting?.description;\n    } catch (e) {}\n  }\n  \n  // Fallback to page structure\n  if (!jobTitle) {\n    const titleMatch = html.match(/<h2[^>]*class=\"posting-headline\"[^>]*>(.*?)<\\/h2>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"section page-centered\"[^>]*>(.*?)<div class=\"section page-centered last-section-apply\">/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// === GENERIC FALLBACKS (for all platforms) ===\nif (!jobTitle || !jobDescription) {\n  // Try JSON-LD\n  const jsonLdMatches = html.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/gs);\n  if (jsonLdMatches) {\n    for (const match of jsonLdMatches) {\n      try {\n        const content = match.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/s)[1];\n        const jsonLd = JSON.parse(content);\n        if (jsonLd['@type'] === 'JobPosting') {\n          jobTitle = jobTitle || jsonLd.title;\n          jobDescription = jobDescription || jsonLd.description;\n        }\n      } catch (e) {}\n    }\n  }\n  \n  // Try Open Graph meta tags\n  if (!jobTitle) {\n    const ogTitleMatch = html.match(/<meta property=\"og:title\" content=\"([^\"]*)\"/);\n    if (ogTitleMatch) jobTitle = ogTitleMatch[1];\n  }\n  \n  if (!jobDescription) {\n    const ogDescMatch = html.match(/<meta property=\"og:description\" content=\"([^\"]*)\"/);\n    if (ogDescMatch) jobDescription = ogDescMatch[1];\n  }\n  \n  // Try regular meta tags\n  if (!jobDescription) {\n    const metaDescMatch = html.match(/<meta name=\"description\" content=\"([^\"]*)\"/);\n    if (metaDescMatch) jobDescription = metaDescMatch[1];\n  }\n  \n  // Try page title as last resort\n  if (!jobTitle) {\n    const pageTitleMatch = html.match(/<title>(.*?)<\\/title>/);\n    if (pageTitleMatch) {\n      jobTitle = pageTitleMatch[1]\n        .replace(/\\s*[-|]\\s*(Ashby|Greenhouse|Workday|Lever|Jobs|Careers).*$/i, '')\n        .trim();\n    }\n  }\n}\n\n// Debug logging for Greenhouse\nif (isGreenhouse) {\n  console.log('Greenhouse extraction results:');\n  console.log('Title found:', !!jobTitle);\n  console.log('Title:', jobTitle);\n  console.log('Description found:', !!jobDescription);\n  console.log('Description length:', jobDescription ? jobDescription.length : 0);\n  if (jobDescription) {\n    console.log('Description preview:', jobDescription.substring(0, 200) + '...');\n  }\n}\n\nreturn {\n  url: url,\n  jobTitle: jobTitle,\n  jobDescription: jobDescription,\n  platform: isGreenhouse ? 'Greenhouse' : isAshby ? 'Ashby' : isWorkday ? 'Workday' : isLever ? 'Lever' : platformFromUrl\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        192
+      ],
+      "id": "2606cc9d-e500-47b2-bad6-b714b6033af5",
+      "name": "Extract Job Info"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the URL from the input\nconst inputUrl = $input.first().json.url;\nconst inputPageTitle = $input.first().json.pageTitle;\n\nfunction normalizeUrl(url) {\n  // Convert http:// to https:// to reduce duplicates\n  let normalizedUrl = url.replace(/^http:\\/\\//i, 'https://');\n  \n  // Split URL into base and query string\n  const [baseUrl, queryString] = normalizedUrl.split('?');\n  \n  // Handle Workday URLs specifically\n  let normalizedBase;\n  if (baseUrl.includes('myworkdayjobs.com')) {\n    // Remove /apply and everything after it\n    normalizedBase = baseUrl.replace(/\\/apply.*$/, '');\n  } else {\n    // For other domains, remove /application and /apply only at the end\n    normalizedBase = baseUrl.replace(/\\/application\\/?$/, '').replace(/\\/apply\\/?$/, '');\n  }\n  \n  // Check if it's a greenhouse.io domain\n  const isGreenhouse = normalizedBase.includes('greenhouse.io');\n  \n  if (queryString) {\n    // Parse parameters\n    const params = queryString.split('&');\n    const keepParams = [];\n    \n    if (isGreenhouse) {\n      // For greenhouse.io, keep 'token' and 'gh_jid'\n      const tokenParam = params.find(param => param.startsWith('token='));\n      const ghJidParam = params.find(param => param.startsWith('gh_jid='));\n      \n      if (tokenParam) keepParams.push(tokenParam);\n      if (ghJidParam) keepParams.push(ghJidParam);\n    } else {\n      // For other domains, keep only 'gh_jid'\n      const ghJidParam = params.find(param => param.startsWith('gh_jid='));\n      if (ghJidParam) keepParams.push(ghJidParam);\n    }\n    \n    // Return URL with preserved parameters if any\n    if (keepParams.length > 0) {\n      return normalizedBase + '?' + keepParams.join('&');\n    }\n  }\n  \n  // Return URL without query parameters\n  return normalizedBase;\n}\n\n// Return the normalized URL\nreturn { \n  url: inputUrl,\n  normalizedUrl: normalizeUrl(inputUrl),\n  pageTitle: inputPageTitle\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1760,
+        -80
+      ],
+      "id": "87af0d4c-216e-4aac-a1cf-6ff52febac38",
+      "name": "Normalize URL"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appWcaAppBDSlB0Aq",
+          "mode": "list",
+          "cachedResultName": "Job Hunt Tracker",
+          "cachedResultUrl": "https://airtable.com/idNumber"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblXbtBdAIYomsskH",
+          "mode": "list",
+          "cachedResultName": "Applications",
+          "cachedResultUrl": "https://airtable.com/idNumber"
+        },
+        "filterByFormula": "={{'OR(' + '{Job Description Link} = \\'' + $json.url + '\\', ' + '{Job Description Link} = \\'' + $json.normalizedUrl + '\\', {Normalized URL} = \\'' + $json.url + '\\', ' + '{Normalized URL} = \\'' + $json.normalizedUrl + '\\')'}}",
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Job Description Link"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1664,
+        -304
+      ],
+      "id": "8b9ce8bb-b839-4d59-b150-0e016fc09f6d",
+      "name": "Find Prior App",
+      "alwaysOutputData": true,
+      "notesInFlow": false,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "airtableTokenID",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9e2f57fb-d16e-45c1-a63d-76f00aa192fe",
+              "leftValue": "={{$json.jobDescription}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1328,
+        192
+      ],
+      "id": "fefd8055-16cd-4a75-a567-20743351d049",
+      "name": "IsAvailable"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appWcaAppBDSlB0Aq",
+          "mode": "list",
+          "cachedResultName": "Job Hunt Tracker",
+          "cachedResultUrl": "https://airtable.com/idNumber"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblXbtBdAIYomsskH",
+          "mode": "list",
+          "cachedResultName": "Applications",
+          "cachedResultUrl": "https://airtable.com/idNumber"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company": "={{ $json.company }}",
+            "Position": "={{ $('Extract Job Info').item.json.jobTitle }}",
+            "Job Description Link": "={{ $('Normalize URL').item.json.url}}",
+            "Source": "AI Agent",
+            "Job Description Text": "={{ $('Extract Job Info').item.json.jobDescription }}",
+            "Status": "={{ $if($json.relevant, \"Found by Agent\", \"Ignore\" ) }}",
+            "Notes": "={{ $json.reasoning }}",
+            "Green Flags": "={{ $json.green_flags.join(\"; \") }}",
+            "Red Flags": "={{ $json.red_flags.join(\"; \") }}",
+            "Platform": "={{ $('Extract Job Info').item.json.platform }}",
+            "Normalized URL": "={{ $('Normalize URL').item.json.normalizedUrl }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Position",
+              "displayName": "Position",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date identified",
+              "displayName": "Date identified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Date Applied",
+              "displayName": "Date Applied",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Decision Date",
+              "displayName": "Decision Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Next Suggested Action (AI)",
+              "displayName": "Next Suggested Action (AI)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Found by Agent",
+                  "value": "Found by Agent"
+                },
+                {
+                  "name": "Applied",
+                  "value": "Applied"
+                },
+                {
+                  "name": "Interviewing",
+                  "value": "Interviewing"
+                },
+                {
+                  "name": "Offer",
+                  "value": "Offer"
+                },
+                {
+                  "name": "Rejected",
+                  "value": "Rejected"
+                },
+                {
+                  "name": "Declined",
+                  "value": "Declined"
+                },
+                {
+                  "name": "Position closed",
+                  "value": "Position closed"
+                },
+                {
+                  "name": "Timed Out",
+                  "value": "Timed Out"
+                },
+                {
+                  "name": "Position filled",
+                  "value": "Position filled"
+                },
+                {
+                  "name": "Passed",
+                  "value": "Passed"
+                },
+                {
+                  "name": "Withdrawn",
+                  "value": "Withdrawn"
+                },
+                {
+                  "name": "I declined to proceed",
+                  "value": "I declined to proceed"
+                },
+                {
+                  "name": "In System",
+                  "value": "In System"
+                },
+                {
+                  "name": "Didn't Apply",
+                  "value": "Didn't Apply"
+                },
+                {
+                  "name": "Didn't Apply - Location",
+                  "value": "Didn't Apply - Location"
+                },
+                {
+                  "name": "Ignore",
+                  "value": "Ignore"
+                },
+                {
+                  "name": "Ignore - Duplicate",
+                  "value": "Ignore - Duplicate"
+                },
+                {
+                  "name": "Ignore - Not Found",
+                  "value": "Ignore - Not Found"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Description Link",
+              "displayName": "Job Description Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total Interview Rounds",
+              "displayName": "Total Interview Rounds",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Interview Rounds",
+              "displayName": "Interview Rounds",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Networking Activities",
+              "displayName": "Number of Networking Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Networking Follow-ups Needed",
+              "displayName": "Networking Follow-ups Needed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Networking Activities",
+              "displayName": "Networking Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Posting Photo",
+              "displayName": "Job Posting Photo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Days Since Applied",
+              "displayName": "Days Since Applied",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Interview Date",
+              "displayName": "Last Interview Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Application Summary (AI)",
+              "displayName": "Application Summary (AI)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "LinkedIn",
+                  "value": "LinkedIn"
+                },
+                {
+                  "name": "Web Search",
+                  "value": "Web Search"
+                },
+                {
+                  "name": "Colleague",
+                  "value": "Colleague"
+                },
+                {
+                  "name": "Referral",
+                  "value": "Referral"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                },
+                {
+                  "name": "AI Agent",
+                  "value": "AI Agent"
+                },
+                {
+                  "name": "Exec Recruiter",
+                  "value": "Exec Recruiter"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Referral",
+              "displayName": "Referral",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resume Link",
+              "displayName": "Resume Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Cover Letter Link",
+              "displayName": "Cover Letter Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Description Text",
+              "displayName": "Job Description Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Green Flags",
+              "displayName": "Green Flags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Red Flags",
+              "displayName": "Red Flags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Normalized URL",
+              "displayName": "Normalized URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Platform",
+              "displayName": "Platform",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1152,
+        -304
+      ],
+      "id": "b13bdad9-89d8-4dc4-aa79-b7c24350046e",
+      "name": "Add New JD",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "airtableTokenID",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appWcaAppBDSlB0Aq",
+          "mode": "list",
+          "cachedResultName": "Job Hunt Tracker",
+          "cachedResultUrl": "https://airtable.com/idNumber"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblXbtBdAIYomsskH",
+          "mode": "list",
+          "cachedResultName": "Applications",
+          "cachedResultUrl": "https://airtable.com/idNumber"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company": "Unknown",
+            "Position": "={{ $('Normalize URL').item.json.pageTitle }}",
+            "Job Description Link": "={{ $('Normalize URL').item.json.url}}",
+            "Source": "AI Agent",
+            "Job Description Text": "N/A",
+            "Status": "Ignore - Not Found",
+            "Notes": "=Skipped - the page was not found or inaccessible.",
+            "Green Flags": "=",
+            "Red Flags": "=",
+            "Platform": "={{ $('Extract Job Info').item.json.platform }}",
+            "Normalized URL": "={{ $('Normalize URL').item.json.normalizedUrl }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Position",
+              "displayName": "Position",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date identified",
+              "displayName": "Date identified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Date Applied",
+              "displayName": "Date Applied",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Decision Date",
+              "displayName": "Decision Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Next Suggested Action (AI)",
+              "displayName": "Next Suggested Action (AI)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Found by Agent",
+                  "value": "Found by Agent"
+                },
+                {
+                  "name": "Applied",
+                  "value": "Applied"
+                },
+                {
+                  "name": "Interviewing",
+                  "value": "Interviewing"
+                },
+                {
+                  "name": "Offer",
+                  "value": "Offer"
+                },
+                {
+                  "name": "Rejected",
+                  "value": "Rejected"
+                },
+                {
+                  "name": "Declined",
+                  "value": "Declined"
+                },
+                {
+                  "name": "Position closed",
+                  "value": "Position closed"
+                },
+                {
+                  "name": "Timed Out",
+                  "value": "Timed Out"
+                },
+                {
+                  "name": "Position filled",
+                  "value": "Position filled"
+                },
+                {
+                  "name": "Passed",
+                  "value": "Passed"
+                },
+                {
+                  "name": "Withdrawn",
+                  "value": "Withdrawn"
+                },
+                {
+                  "name": "I declined to proceed",
+                  "value": "I declined to proceed"
+                },
+                {
+                  "name": "In System",
+                  "value": "In System"
+                },
+                {
+                  "name": "Didn't Apply",
+                  "value": "Didn't Apply"
+                },
+                {
+                  "name": "Didn't Apply - Location",
+                  "value": "Didn't Apply - Location"
+                },
+                {
+                  "name": "Ignore",
+                  "value": "Ignore"
+                },
+                {
+                  "name": "Ignore - Duplicate",
+                  "value": "Ignore - Duplicate"
+                },
+                {
+                  "name": "Ignore - Not Found",
+                  "value": "Ignore - Not Found"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Description Link",
+              "displayName": "Job Description Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total Interview Rounds",
+              "displayName": "Total Interview Rounds",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Interview Rounds",
+              "displayName": "Interview Rounds",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Networking Activities",
+              "displayName": "Number of Networking Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Networking Follow-ups Needed",
+              "displayName": "Networking Follow-ups Needed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Networking Activities",
+              "displayName": "Networking Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Posting Photo",
+              "displayName": "Job Posting Photo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Days Since Applied",
+              "displayName": "Days Since Applied",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Last Interview Date",
+              "displayName": "Last Interview Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Application Summary (AI)",
+              "displayName": "Application Summary (AI)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "LinkedIn",
+                  "value": "LinkedIn"
+                },
+                {
+                  "name": "Web Search",
+                  "value": "Web Search"
+                },
+                {
+                  "name": "Colleague",
+                  "value": "Colleague"
+                },
+                {
+                  "name": "Referral",
+                  "value": "Referral"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                },
+                {
+                  "name": "AI Agent",
+                  "value": "AI Agent"
+                },
+                {
+                  "name": "Exec Recruiter",
+                  "value": "Exec Recruiter"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Referral",
+              "displayName": "Referral",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resume Link",
+              "displayName": "Resume Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Cover Letter Link",
+              "displayName": "Cover Letter Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Description Text",
+              "displayName": "Job Description Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Green Flags",
+              "displayName": "Green Flags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Red Flags",
+              "displayName": "Red Flags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Normalized URL",
+              "displayName": "Normalized URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Platform",
+              "displayName": "Platform",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1392,
+        -304
+      ],
+      "id": "7d0c1cc7-b848-4aae-8fbf-911b4ff0fad9",
+      "name": "Add Invalid JD",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "airtableTokenID",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9e2f57fb-d16e-45c1-a63d-76f00aa192fe",
+              "leftValue": "={{$input.item}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2e54b056-7898-440f-9888-2c49a238a3a1",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1312,
+        -80
+      ],
+      "id": "873494b2-be76-4094-8aad-1ab6019f6eba",
+      "name": "IsAppFound"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-20250514",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-20250514"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Your LLM Prompt - see 04a - LLM Prompt.md file for inspiration\n\n=== Job Title ===\n{{ $json.jobTitle }}\n\n=== Job Description ===\n{{ $json.jobDescription }}\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {
+          "maxTokens": 2048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        176
+      ],
+      "id": "149d56c7-7fce-444e-98b9-999f2899b7a0",
+      "name": "Analyze Job Posting",
+      "alwaysOutputData": true,
+      "credentials": {
+        "anthropicApi": {
+          "id": "idAnthropicAccount",
+          "name": "Anthropic account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "applications",
+          "mode": "list",
+          "cachedResultName": "applications"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "normalized_url": "={{ $('Normalize URL').first().json.normalizedUrl }}",
+            "job_description_link": "={{ $('Normalize URL').first().json.url }}",
+            "platform": "={{ $('Extract Job Info').item.json.platform }}",
+            "job_description_text": "={{ $('Extract Job Info').item.json.jobDescription }}",
+            "notes": "={{ $json.reasoning }}",
+            "green_flags": "={{ $json.green_flags.join(\"; \") }}",
+            "red_flags": "={{ $json.red_flags.join(\"; \") }}",
+            "date_identified": "={{  $now.format('MM/dd/yyyy') }}",
+            "position": "={{ $json.job_title }}",
+            "company": "={{ $json.company }}",
+            "status": "={{ $if($json.relevant, \"Found by Agent\", \"Ignore\" ) }}",
+            "source": "AI Agent"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "position",
+              "displayName": "position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date_identified",
+              "displayName": "date_identified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date_applied",
+              "displayName": "date_applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decision_date",
+              "displayName": "decision_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_description_link",
+              "displayName": "job_description_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_description_text",
+              "displayName": "job_description_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_flags",
+              "displayName": "green_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "red_flags",
+              "displayName": "red_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "normalized_url",
+              "displayName": "normalized_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -576,
+        160
+      ],
+      "id": "ee633190-1db6-4741-bfe5-d707ba142d82",
+      "name": "Add new JD",
+      "credentials": {
+        "postgres": {
+          "id": "idNumber",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "applications",
+          "mode": "list",
+          "cachedResultName": "applications"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "normalized_url": "={{ $('Normalize URL').first().json.normalizedUrl }}",
+            "job_description_link": "={{ $('Normalize URL').first().json.url }}",
+            "platform": "={{ $('Extract Job Info').item.json.platform }}",
+            "job_description_text": "=N/A",
+            "notes": "=",
+            "green_flags": "=",
+            "red_flags": "=",
+            "date_identified": "={{  $now.format('MM/dd/yyyy') }}",
+            "position": "={{ $('Normalize URL').first().json.pageTitle }}",
+            "company": "Unknown",
+            "status": "Ignore - Not Found",
+            "source": "AI Agent"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "position",
+              "displayName": "position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date_identified",
+              "displayName": "date_identified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date_applied",
+              "displayName": "date_applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decision_date",
+              "displayName": "decision_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_description_link",
+              "displayName": "job_description_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_description_text",
+              "displayName": "job_description_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_flags",
+              "displayName": "green_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "red_flags",
+              "displayName": "red_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "normalized_url",
+              "displayName": "normalized_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -576,
+        0
+      ],
+      "id": "c28cfb93-a92a-45bc-8191-2337b807645b",
+      "name": "Add invalid JD",
+      "credentials": {
+        "postgres": {
+          "id": "idNumber",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "applications",
+          "mode": "list",
+          "cachedResultName": "applications"
+        },
+        "limit": 5,
+        "where": {
+          "values": [
+            {
+              "column": "job_description_link",
+              "value": "={{ $json.normalizedUrl }}"
+            },
+            {
+              "column": "normalized_url",
+              "value": "={{ $json.normalizedUrl }}"
+            }
+          ]
+        },
+        "combineConditions": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1536,
+        -80
+      ],
+      "id": "f08012bb-f10e-4fb3-ac26-0b49d2c86b6a",
+      "name": "Test If Seen Before",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "idNumber",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Return_Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleanup JSON": {
+      "main": [
+        [
+          {
+            "node": "Add new JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Proxy Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Proxy Data": {
+      "main": [
+        [
+          {
+            "node": "Normalize URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract Job Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job Info": {
+      "main": [
+        [
+          {
+            "node": "IsAvailable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize URL": {
+      "main": [
+        [
+          {
+            "node": "Test If Seen Before",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Prior App": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "IsAvailable": {
+      "main": [
+        [
+          {
+            "node": "Analyze Job Posting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add invalid JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add New JD": {
+      "main": [
+        []
+      ]
+    },
+    "Add Invalid JD": {
+      "main": [
+        []
+      ]
+    },
+    "IsAppFound": {
+      "main": [
+        [
+          {
+            "node": "Return_Existing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Job Posting": {
+      "main": [
+        [
+          {
+            "node": "Cleanup JSON",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add new JD": {
+      "main": [
+        [
+          {
+            "node": "Return_New",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add invalid JD": {
+      "main": [
+        [
+          {
+            "node": "Return_Existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test If Seen Before": {
+      "main": [
+        [
+          {
+            "node": "IsAppFound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9e7cdaba-b305-4526-8758-2481f0a8875f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
+  },
+  "id": "nkMxxECtkSA7OT6w",
+  "tags": []
+}
