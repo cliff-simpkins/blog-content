@@ -9,7 +9,7 @@ A full description of this solution can be found on my blog: https://simpkins.so
 
 ## Installing these files
 The current files are intended to help you get started with the solution, and not as a turn-key solution. They assume that you know your way around n8n and your data store, or that you have an interest to learn.
-1. Install the Brave Search node into n7n instance
+1. Install the Brave Search node into n8n instance
 2. Import the n8n JSON files into your n8n instance
 3. Wire up the workflows and sub-works:
      - 01 should call the 02 and 04 sub-workflows
@@ -18,13 +18,18 @@ The current files are intended to help you get started with the solution, and no
      - SQL file that defines the 'applications' schema, which is used to store processed URLs
      - CSV file that is a basic export of the 'applications' data table
 5. Connect workflow nodes to your accounts:
-     - Google Custom Search API - add your cx and API key into the 03 workflow
-     - Brave Search API - add your API key to the 03 workflow
+     - Google Custom Search API - add your cx and API key into the 03a workflow
+     - Brave Search API - add your API key to the 03b workflow
      - Connect up your data nodes and add your credentials into n8n, whether Postgres or Airtable
        - Note - if you are using Airtable, you'll want to disconnect the Postgres nodes and connect up the Airtable nodes. The Airtable nodes are present in workflows 01 and 04, but they are sitting off to the side.
      - If you are using a different data store, replace the data cache nodes in workflows 01 and 04 with what you are using
 6. Connect up your LLM of choice and complete/add the instructions that you wish to use
-7. Give it a test and update!
+7. Update relevant strings and prompts to match your job search
+     - Update your search queries in the 'Set Search Parameters' node in workflows 02a and 02b
+     - Tailor your role keywords in the 'Validate Role Keywords' node in workflow 04
+     - Tailor the prompt contained in the file '04a - LLM Prompt.md' and add that to the 'Analyze Job Posting' node in workflow 04
+     - As desired, update which job boards you want to search on what days by updated the 'Switch' node within workflow 02a. Each day corresponds the day of the week
+8. Give it a test and update!
 
 ## Extending the Solution
 Consider this a starting point - get creative and see where it can take you! Ideas:
