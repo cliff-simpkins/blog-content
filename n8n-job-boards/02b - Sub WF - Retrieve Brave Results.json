@@ -1,5 +1,5 @@
 {
-  "name": "Sub WF- Retrieve Google Results",
+  "name": "02b - Sub WF - Retrieve Brave Results",
   "nodes": [
     {
       "parameters": {},
@@ -9,7 +9,7 @@
         -752,
         192
       ],
-      "id": "1f15daeb-fe72-4262-98b5-351f26aee6c7",
+      "id": "fe8262a2-9ce3-4b2b-b302-a05d109c2c9b",
       "name": "Manual Trigger"
     },
     {
@@ -19,7 +19,7 @@
             {
               "id": "requestId",
               "name": "query",
-              "value": "(intitle:\"roleTitle\" OR intitle:\"roleTitle\") AND intext:reqTermOnPage",
+              "value": "(intitle:\"roleTitle\" OR intitle:\"roleTitle\") AND inpage:\"requiredTermInJD\" AND NOT intitle:\"notRoleTitle\"",
               "type": "string"
             }
           ]
@@ -32,7 +32,7 @@
         -496,
         48
       ],
-      "id": "677fc943-7daf-48ca-95e5-632f3e311a78",
+      "id": "1d2a0760-9ad6-4f21-8cd3-476c719f9c40",
       "name": "Set Search Parameters"
     },
     {
@@ -73,7 +73,7 @@
         320,
         -288
       ],
-      "id": "f7392454-5a98-4a65-a9d5-622247fcbb37",
+      "id": "093abf7f-d137-49e2-9a1f-21c3ec8af9f2",
       "name": "Process Search Results"
     },
     {
@@ -87,17 +87,17 @@
         544,
         -288
       ],
-      "id": "6c7c0a11-b26d-4719-8ab7-29255c70b0ca",
+      "id": "ab4e61f5-19ae-4c9e-ae35-ba8e95e080bb",
       "name": "Split Individual Results"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aQ1WS84f3zOKjFUD",
+          "value": "wPonEanWkKtPqPeR",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aQ1WS84f3zOKjFUD",
-          "cachedResultName": "03 - Sub WF - Run Google Search Query"
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "Sub WF - Run Brave Search Query"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -141,7 +141,7 @@
         96,
         -288
       ],
-      "id": "69e3be04-514c-4721-a579-5a6ed4ad00fb",
+      "id": "53a1af8f-e642-4940-91bf-d7eb12e0f759",
       "name": "Search - Greenhouse"
     },
     {
@@ -152,9 +152,9 @@
         -112,
         -64
       ],
-      "id": "020004b6-2c9c-424d-8034-1ff77699c1dc",
+      "id": "05ee48ef-d833-4f64-9026-6dfe4a2d384f",
       "name": "Ashby Pause",
-      "webhookId": "c1ece2a1-d719-4633-b5f4-23396f6424eb"
+      "webhookId": "84c832d9-6ca7-4451-901b-38c346337f45"
     },
     {
       "parameters": {},
@@ -164,9 +164,9 @@
         -112,
         128
       ],
-      "id": "e79e4b29-9345-48ee-acd3-717ad02bc0c7",
+      "id": "c725325b-d189-466e-8ec5-12a28986162e",
       "name": "Lever Pause",
-      "webhookId": "c1ece2a1-d719-4633-b5f4-23396f6424eb"
+      "webhookId": "3159f1e8-83ff-4c57-bafa-0270b8a24e95"
     },
     {
       "parameters": {},
@@ -176,18 +176,18 @@
         -112,
         304
       ],
-      "id": "c2159fa5-496c-40cc-9cd9-0bc38635f4cb",
+      "id": "583811fc-6c76-4f53-9757-31fa5b2f688a",
       "name": "Workday Pause",
-      "webhookId": "c1ece2a1-d719-4633-b5f4-23396f6424eb"
+      "webhookId": "b95f2b40-ba0a-475f-bce7-3bb8f225a0c0"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aQ1WS84f3zOKjFUD",
+          "value": "wPonEanWkKtPqPeR",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aQ1WS84f3zOKjFUD",
-          "cachedResultName": "03 - Sub WF - Run Google Search Query"
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "Sub WF - Run Brave Search Query"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -231,17 +231,17 @@
         96,
         -64
       ],
-      "id": "4f760766-f6e9-4746-b388-ae4ffd139fca",
+      "id": "cbc37844-2592-49ea-aa63-4034ac2b872f",
       "name": "Search - Ashby"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aQ1WS84f3zOKjFUD",
+          "value": "wPonEanWkKtPqPeR",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aQ1WS84f3zOKjFUD",
-          "cachedResultName": "03 - Sub WF - Run Google Search Query"
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "Sub WF - Run Brave Search Query"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -285,17 +285,17 @@
         96,
         128
       ],
-      "id": "1d2ba3d0-d789-460f-897e-2eeb120dc34c",
+      "id": "5b0d5c0d-ac99-44e7-b272-bc9e8185fd77",
       "name": "Search - Lever"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aQ1WS84f3zOKjFUD",
+          "value": "wPonEanWkKtPqPeR",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aQ1WS84f3zOKjFUD",
-          "cachedResultName": "03 - Sub WF - Run Google Search Query"
+          "cachedResultUrl": "/workflow/wPonEanWkKtPqPeR",
+          "cachedResultName": "Sub WF - Run Brave Search Query"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -339,7 +339,7 @@
         96,
         304
       ],
-      "id": "b03c6f7a-8ee0-4d34-891a-8cabafc1952b",
+      "id": "07836472-e332-4518-9d51-f2555bd54638",
       "name": "Search - Workday"
     },
     {
@@ -380,7 +380,7 @@
         320,
         -64
       ],
-      "id": "16fb3c0b-203f-45a0-878a-f4c3c814f8c0",
+      "id": "9ca3671f-92af-4704-b1fb-e1b57a187c7d",
       "name": "Process Search Results1"
     },
     {
@@ -394,7 +394,7 @@
         560,
         -64
       ],
-      "id": "93d54ea1-9545-4c4d-85f5-a6e26bd4c2d0",
+      "id": "bbf88c47-aa4e-4207-93a8-ff4d0ffd7637",
       "name": "Split Individual Results1"
     },
     {
@@ -435,7 +435,7 @@
         320,
         128
       ],
-      "id": "41b5c2ce-c406-46bb-a4e3-f49572e44f38",
+      "id": "597a1468-f599-4df8-af19-4a4b6443c9c8",
       "name": "Process Search Results2"
     },
     {
@@ -449,7 +449,7 @@
         560,
         128
       ],
-      "id": "07a4fa2c-b023-4b43-8923-61bf249082ef",
+      "id": "a72a8031-7ae2-4ec6-94e8-428f12113179",
       "name": "Split Individual Results2"
     },
     {
@@ -490,7 +490,7 @@
         320,
         304
       ],
-      "id": "0c8fdd78-42f3-4cd6-b5bb-6f136dbbd09b",
+      "id": "b29b26fd-93b3-4120-a04d-4d01df1539e8",
       "name": "Process Search Results3"
     },
     {
@@ -504,7 +504,7 @@
         560,
         304
       ],
-      "id": "43d49557-4cb5-46ed-b0e1-cde631b711f8",
+      "id": "88593403-0fd8-4edc-8f7a-dcb60160d4bf",
       "name": "Split Individual Results3"
     },
     {
@@ -517,7 +517,7 @@
         864,
         64
       ],
-      "id": "6bf4e347-5822-42f5-a662-2e01f39e22eb",
+      "id": "981092b0-8ad5-442c-8d14-4e3d72059ba9",
       "name": "Merge"
     },
     {
@@ -536,7 +536,7 @@
         -720,
         -144
       ],
-      "id": "b2bb3a4f-38c6-41cc-a9ad-17e22ecce902",
+      "id": "08edeba3-1e18-4757-8481-043125f356c0",
       "name": "When Executed by Another Workflow"
     }
   ],
@@ -760,10 +760,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "46062f71-0cc9-4b4d-8876-e62256bc75de",
+  "versionId": "28a2e637-fc51-46cf-bfe0-a09b3c978342",
   "meta": {
     "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
   },
-  "id": "vlBHF9gQarpVFiAW",
+  "id": "dKUB9CouRHXP59Vi",
   "tags": []
 }

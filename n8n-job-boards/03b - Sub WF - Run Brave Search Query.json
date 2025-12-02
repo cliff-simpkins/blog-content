@@ -1,5 +1,5 @@
 {
-  "name": "Sub WF - Run Brave Search Query",
+  "name": "03b - Sub WF - Run Brave Search Query",
   "nodes": [
     {
       "parameters": {
@@ -219,7 +219,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "357f0a1f-28b8-4da0-9b3b-d63edc490f22",
+  "versionId": "84cda9f2-9050-4aec-ac25-58d85355dacb",
   "meta": {
     "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
   },

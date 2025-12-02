@@ -1,9 +1,9 @@
 {
-  "name": "Sub WF - Run Google Search Query",
+  "name": "03a - Sub WF - Run Google Search Query",
   "nodes": [
     {
       "parameters": {
-        "jsCode": "// Get input from parent workflow\nconst input = $input.first().json;\n\n// Initialize variables for pagination with input from parent\nconst baseUrl = \"https://www.googleapis.com/customsearch/v1\";\nconst cx = \"cxIdNumber\";\nconst query = input.query ||  \"(intitle:\\\"roleTitle1\\\" OR intitle:\\\"roleTitle2\\\") AND intext:onPageText\";\n\n// Use siteSearch from input, with fallback\nconst siteSearch = input.siteSearch || \"ashbyhq.com\";\n\n// Set initial values\nreturn [{\n  json: {\n    cx: cx,\n    query: query,\n    siteSearch: siteSearch,\n    start: 1,\n    allResults: [],\n    hasMoreResults: true,\n    totalResults: 0,\n    currentPage: 1,\n    inputData: input // Store original input for reference\n  }\n}];"
+        "jsCode": "// Get input from parent workflow\nconst input = $input.first().json;\n\n// Initialize variables for pagination with input from parent\nconst baseUrl = \"https://www.googleapis.com/customsearch/v1\";\nconst cx = \"cxIdNumber\";\nconst query = input.query || \"(intitle:\\\"roleTitle1\\\" OR intitle:\\\"roleTitle2\\\") AND intext:onPageText\";\n\n  // Use siteSearch from input, with fallback\nconst siteSearch = input.siteSearch || \"ashbyhq.com\";\n\n// Set initial values\nreturn [{\n  json: {\n    cx: cx,\n    query: query,\n    siteSearch: siteSearch,\n    start: 1,\n    allResults: [],\n    hasMoreResults: true,\n    totalResults: 0,\n    currentPage: 1,\n    inputData: input // Store original input for reference\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -105,7 +105,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Prepare final output for parent workflow\nconst finalData = $input.first().json;\n\n// Return the results in a format expected by parent workflow\nreturn [{\n  json: {\n    success: true,\n    siteSearch: finalData.siteSearch,\n    searchSummary: {\n      totalResultsFound: finalData.totalResults,\n      totalResultsCollected: finalData.totalCollected,\n      pagesProcessed: finalData.currentPage - 1,\n      query: finalData.query,\n      siteSearch: finalData.siteSearch\n    },\n    allResults: finalData.allResults,\n    originalInput: finalData.inputData\n  }\n}];"
+        "jsCode": "// Prepare final output for parent workflow\nconst finalData = $input.first().json;\n\n// Return the results in a format expected by parent workflow\nreturn [{\n  json: {\n    success: true,\n    siteSearch: finalData.siteSearch,\n    searchSummary: {\n      totalResultsFound: finalData.totalResults,\n      totalResultsCollected: finalData.totalCollected,\n      pagesProcessed: finalData.currentPage - 1,\n      query: finalData.query,\n      siteSearch: $('Initialize with Input').first().json.siteSearch\n    },\n    allResults: finalData.allResults,\n    originalInput: finalData.inputData\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -238,7 +238,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "d1dc7d4e-2508-4114-bce0-4883eb4e0d64",
+  "versionId": "67450184-b6ec-4012-958c-9041857a7229",
   "meta": {
     "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
   },

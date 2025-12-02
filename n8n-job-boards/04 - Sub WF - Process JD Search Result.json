@@ -1,5 +1,5 @@
 {
-  "name": "Sub WF- Process JD Search Result",
+  "name": "04 - Sub WF - Process JD Search Result",
   "nodes": [
     {
       "parameters": {
@@ -17,7 +17,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -2112,
+        -2128,
         -64
       ],
       "id": "f13cd698-6393-4675-8aad-cfead887acc9",
@@ -30,7 +30,7 @@
       "typeVersion": 1,
       "position": [
         -736,
-        368
+        624
       ],
       "id": "1ad5d743-a461-4a87-8edc-009be118f52a",
       "name": "No Operation, do nothing"
@@ -38,14 +38,14 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={{ $json.content[0].text }}",
+        "jsonOutput": "=={{ $json.content[0].text.replace(/^```json\\n?/g, '').replace(/```\\n?$/g, '').trim() }}",
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -736,
-        160
+        -816,
+        320
       ],
       "id": "00fc7dae-e165-4690-a529-eea0dfa12cd4",
       "name": "Cleanup JSON"
@@ -103,7 +103,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -384,
+        -160,
         -96
       ],
       "id": "12c69d3c-3db7-42ab-b260-16bdd8453708",
@@ -133,7 +133,7 @@
             {
               "id": "07cd3417-59fc-4c47-b515-63a1d611776e",
               "name": "pageTitle",
-              "value": "Unknown - test data",
+              "value": "Unknown - Test",
               "type": "string"
             }
           ]
@@ -180,7 +180,7 @@
             {
               "id": "c9012125-4aff-4de2-a960-deae7db8d9b7",
               "name": "AddedPosting",
-              "value": "={{ $('Cleanup JSON').item.json.job_title + \" (\" + $('Cleanup JSON').item.json.company + \")  - \" + $('Cleanup JSON').item.json.reasoning}}",
+              "value": "={{ \"<a href='\" + $('Extract Job Info').item.json.url + \"'>\" + $('Cleanup JSON').item.json.job_title + \" (\" + $('Cleanup JSON').item.json.company + \")</a> - \" + $('Cleanup JSON').item.json.reasoning + \"<ul><li>Green Flags: \" + $('Cleanup JSON').item.json.green_flags + \"</li><li>Red Flags: \" + $('Cleanup JSON').item.json.red_flags + \"</li></ul>\"}}",
               "type": "string"
             },
             {
@@ -202,8 +202,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -400,
-        160
+        -160,
+        336
       ],
       "id": "11402799-eaf3-4c4f-97fb-1e65876440a9",
       "name": "Return_New"
@@ -261,15 +261,15 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -400,
-        368
+        -144,
+        624
       ],
       "id": "d975081b-e13c-4889-be6e-f615b544bc5c",
       "name": "Return_Error"
     },
     {
       "parameters": {
-        "url": "={{ $('Normalize URL').first().json.normalizedUrl }}",
+        "url": "={{ $('Extract Job Info').isExecuted ? $('Extract Job Info').first().json.iframeUrl  : $('Normalize URL').first().json.normalizedUrl}}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -295,8 +295,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1664,
-        192
+        -1728,
+        144
       ],
       "id": "330ed4e7-7165-4132-a3ad-41bc0a2a26bd",
       "name": "HTTP Request",
@@ -308,13 +308,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get the HTML from the HTTP Request node\nconst html = $input.first().json.data;\n\n// Get the URL from the previous normalization node\nlet url = $('Normalize URL').first().json.normalizedUrl || \n          $('Normalize URL').first().json.url ||\n          $input.first().json.url;\n\n// If still not found, try to get from any previous node\nif (!url) {\n  const allItems = $input.all();\n  for (const item of allItems) {\n    if (item.json.normalizedUrl) {\n      url = item.json.normalizedUrl;\n      break;\n    }\n    if (item.json.url) {\n      url = item.json.url;\n      break;\n    }\n  }\n}\n\n// Detect platform from URL first (before checking HTML)\nlet platformFromUrl = 'Unknown';\nif (url) {\n  if (url.includes('greenhouse.io') || url.includes('gh_jid=') || url.includes('gh_src=')) {\n    platformFromUrl = 'Greenhouse';\n  } else if (url.includes('ashbyhq.com')) {\n    platformFromUrl = 'Ashby';\n  } else if (url.includes('myworkdayjobs.com') || url.includes('workday.com')) {\n    platformFromUrl = 'Workday';\n  } else if (url.includes('lever.co')) {\n    platformFromUrl = 'Lever';\n  }\n}\n\n// Safety check: if html is undefined or empty, return null values but include platform\nif (!html || html.length === 0) {\n  return {\n    url: url,\n    jobTitle: null,\n    jobDescription: null,\n    platform: platformFromUrl,\n    error: 'Failed to fetch HTML content'\n  };\n}\n\nlet jobTitle = null;\nlet jobDescription = null;\n\n// Detect platform by fingerprints (refine detection with HTML content)\nconst hasGhJid = url ? (url.includes('gh_jid=') || url.includes('gh_src=')) : false;\nconst hasGreenhouseData = html.includes('window.GREENHOUSE_DATA') || html.includes('greenhouse.io');\nconst hasAshbyData = html.includes('window.__ASHBY_JOB_POSTING_APP__') || html.includes('ashbyhq.com');\nconst hasWorkdayData = html.includes('myworkdayjobs.com') || html.includes('workday.com/wday');\nconst hasLeverData = html.includes('window._LEVER_STATE') || html.includes('lever.co');\n\nconst isGreenhouse = hasGhJid || hasGreenhouseData || (url && url.includes('greenhouse.io'));\nconst isAshby = hasAshbyData || (url && url.includes('ashbyhq.com'));\nconst isWorkday = hasWorkdayData || (url && url.includes('myworkdayjobs.com'));\nconst isLever = hasLeverData || (url && url.includes('lever.co'));\n\n// === IMPROVED GREENHOUSE EXTRACTION ===\nif (isGreenhouse) {\n  // Method 1: Try Greenhouse JSON data\n  const ghDataMatch = html.match(/window\\.GREENHOUSE_DATA\\s*=\\s*({.*?});/s);\n  if (ghDataMatch) {\n    try {\n      const ghData = JSON.parse(ghDataMatch[1]);\n      jobTitle = ghData.title || ghData.name;\n      jobDescription = ghData.content || ghData.description;\n    } catch (e) {\n      console.log('Failed to parse GREENHOUSE_DATA:', e);\n    }\n  }\n  \n  // Method 2: Try different Greenhouse data patterns\n  if (!jobTitle || !jobDescription) {\n    const patterns = [\n      /window\\.gon\\s*=\\s*({.*?});/s,\n      /window\\.GreenhouseConfig\\s*=\\s*({.*?});/s,\n      /window\\.jobPostingData\\s*=\\s*({.*?});/s\n    ];\n    \n    for (const pattern of patterns) {\n      const match = html.match(pattern);\n      if (match) {\n        try {\n          const data = JSON.parse(match[1]);\n          jobTitle = jobTitle || data.title || data.name || data.job?.title;\n          jobDescription = jobDescription || data.content || data.description || data.job?.description;\n        } catch (e) {}\n      }\n    }\n  }\n  \n  // Method 3: Extract job title from HTML\n  if (!jobTitle) {\n    const titleSelectors = [\n      // Specific to the HTML structure you provided\n      /<h1[^>]*class=\"[^\"]*section-header[^\"]*\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"app-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"posting-headline\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"job-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*id=\"job-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*>(.*?)<\\/h1>/s\n    ];\n    \n    for (const selector of titleSelectors) {\n      const match = html.match(selector);\n      if (match) {\n        jobTitle = match[1].replace(/<[^>]*>/g, '').trim();\n        if (jobTitle && jobTitle.length > 3) break;\n      }\n    }\n  }\n  \n  // Method 4: Extract job description from HTML - UPDATED for your structure\n  if (!jobDescription) {\n    const descriptionSelectors = [\n      // Specific to the HTML structure you provided\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<\\/div>\\s*<div[^>]*class=\"job-alert/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<div[^>]*class=\"divider\"/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<div[^>]*class=\"application--container\"/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<\\/div>/s,\n      \n      // Other common Greenhouse patterns\n      /<div[^>]*id=\"content\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"section-wrapper\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"posting-content\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"job-post-content\"[^>]*>(.*?)<\\/div>/s,\n      \n      // Look for multiple content sections\n      /<section[^>]*class=\"section\"[^>]*>(.*?)<\\/section>/gs,\n      /<div[^>]*class=\"section\"[^>]*>(.*?)<\\/div>/gs,\n      \n      // Broader content area\n      /<main[^>]*>(.*?)<\\/main>/s,\n      /<article[^>]*>(.*?)<\\/article>/s\n    ];\n    \n    for (const selector of descriptionSelectors) {\n      const match = html.match(selector);\n      if (match) {\n        let content = match[1].trim();\n        \n        // If using global flag, get all matches and concatenate\n        if (selector.flags && selector.flags.includes('g')) {\n          const allMatches = html.match(selector);\n          if (allMatches && allMatches.length > 0) {\n            content = allMatches.map(m => \n              m.replace(/<section[^>]*class=\"section\"[^>]*>|<\\/section>/g, '')\n               .replace(/<div[^>]*class=\"section\"[^>]*>|<\\/div>/g, '')\n            ).join('\\n\\n');\n          }\n        }\n        \n        // Clean up common unwanted content\n        content = content.replace(/<form[^>]*>.*?<\\/form>/gs, ''); // Remove application forms\n        content = content.replace(/<div[^>]*class=\"[^\"]*eeoc[^\"]*\"[^>]*>.*?<\\/div>/gs, ''); // Remove EEOC sections\n        \n        // Filter out if it's too short (likely just location or other metadata)\n        if (content && content.length > 200) { // Increased threshold\n          jobDescription = content;\n          break;\n        }\n      }\n    }\n  }\n}\n\n// === ASHBY EXTRACTION ===\nif (isAshby) {\n  // Try Ashby app data\n  const ashbyMatch = html.match(/window\\.__ASHBY_JOB_POSTING_APP__\\s*=\\s*({.*?});/s);\n  if (ashbyMatch) {\n    try {\n      const appData = JSON.parse(ashbyMatch[1]);\n      jobTitle = appData.jobPosting?.title;\n      jobDescription = appData.jobPosting?.descriptionHtml || appData.jobPosting?.description;\n    } catch (e) {}\n  }\n}\n\n// === WORKDAY EXTRACTION ===\nif (isWorkday) {\n  // Workday uses JSON-LD\n  const jsonLdMatches = html.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/gs);\n  if (jsonLdMatches) {\n    for (const match of jsonLdMatches) {\n      try {\n        const content = match.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/s)[1];\n        const jsonLd = JSON.parse(content);\n        if (jsonLd['@type'] === 'JobPosting') {\n          jobTitle = jsonLd.title;\n          jobDescription = jsonLd.description;\n          break;\n        }\n      } catch (e) {}\n    }\n  }\n}\n\n// === LEVER EXTRACTION ===\nif (isLever) {\n  // Try Lever's data structure\n  const leverMatch = html.match(/window\\._LEVER_STATE\\s*=\\s*({.*?});/s);\n  if (leverMatch) {\n    try {\n      const leverData = JSON.parse(leverMatch[1]);\n      jobTitle = leverData.posting?.text;\n      jobDescription = leverData.posting?.descriptionHtml || leverData.posting?.description;\n    } catch (e) {}\n  }\n  \n  // Fallback to page structure\n  if (!jobTitle) {\n    const titleMatch = html.match(/<h2[^>]*class=\"posting-headline\"[^>]*>(.*?)<\\/h2>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"section page-centered\"[^>]*>(.*?)<div class=\"section page-centered last-section-apply\">/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// === GENERIC FALLBACKS (for all platforms) ===\nif (!jobTitle || !jobDescription) {\n  // Try JSON-LD\n  const jsonLdMatches = html.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/gs);\n  if (jsonLdMatches) {\n    for (const match of jsonLdMatches) {\n      try {\n        const content = match.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/s)[1];\n        const jsonLd = JSON.parse(content);\n        if (jsonLd['@type'] === 'JobPosting') {\n          jobTitle = jobTitle || jsonLd.title;\n          jobDescription = jobDescription || jsonLd.description;\n        }\n      } catch (e) {}\n    }\n  }\n  \n  // Try Open Graph meta tags\n  if (!jobTitle) {\n    const ogTitleMatch = html.match(/<meta property=\"og:title\" content=\"([^\"]*)\"/);\n    if (ogTitleMatch) jobTitle = ogTitleMatch[1];\n  }\n  \n  if (!jobDescription) {\n    const ogDescMatch = html.match(/<meta property=\"og:description\" content=\"([^\"]*)\"/);\n    if (ogDescMatch) jobDescription = ogDescMatch[1];\n  }\n  \n  // Try regular meta tags\n  if (!jobDescription) {\n    const metaDescMatch = html.match(/<meta name=\"description\" content=\"([^\"]*)\"/);\n    if (metaDescMatch) jobDescription = metaDescMatch[1];\n  }\n  \n  // Try page title as last resort\n  if (!jobTitle) {\n    const pageTitleMatch = html.match(/<title>(.*?)<\\/title>/);\n    if (pageTitleMatch) {\n      jobTitle = pageTitleMatch[1]\n        .replace(/\\s*[-|]\\s*(Ashby|Greenhouse|Workday|Lever|Jobs|Careers).*$/i, '')\n        .trim();\n    }\n  }\n}\n\n// Debug logging for Greenhouse\nif (isGreenhouse) {\n  console.log('Greenhouse extraction results:');\n  console.log('Title found:', !!jobTitle);\n  console.log('Title:', jobTitle);\n  console.log('Description found:', !!jobDescription);\n  console.log('Description length:', jobDescription ? jobDescription.length : 0);\n  if (jobDescription) {\n    console.log('Description preview:', jobDescription.substring(0, 200) + '...');\n  }\n}\n\nreturn {\n  url: url,\n  jobTitle: jobTitle,\n  jobDescription: jobDescription,\n  platform: isGreenhouse ? 'Greenhouse' : isAshby ? 'Ashby' : isWorkday ? 'Workday' : isLever ? 'Lever' : platformFromUrl\n};"
+        "jsCode": "// ============================================================================\n// HELPER FUNCTIONS - Defined first for clarity\n// ============================================================================\n\n/**\n * Check if HTML content suggests a general careers page vs specific job posting\n */\nfunction isGeneralCareersPageContent(html) {\n  if (!html || html.length === 0) {\n    return false;\n  }\n  \n  const htmlLower = html.toLowerCase();\n  \n  // CRITICAL CHECK FIRST: Count job links - if there are many, it's definitely a listing page\n  // Different platforms use different URL patterns:\n  // - Greenhouse: /jobs/12345 or ?gh_jid=12345\n  // - Ashby: /companyname/job-slug-here\n  // - Lever: /companyname/job-slug\n  // - Workday: /job/Job-Title/JOB_ID\n  // - Jobvite: /jobs/job-id or /careers/jobs\n  // - SmartRecruiters: /companyname/job-id\n  // - iCIMS: /jobs/12345\n  // - Workable: /j/job-id\n  // - BambooHR: /jobs/view.php?id=123\n  \n  const jobLinkPatterns = [\n    // Greenhouse style: /jobs/12345 or ?gh_jid=12345\n    /<a[^>]*href=\"[^\"]*\\/jobs?\\/\\d+[^\"]*\"[^>]*>/gi,\n    /<a[^>]*href=\"[^\"]*gh_jid=\\d+[^\"]*\"[^>]*>/gi,\n    \n    // Ashby style: multiple links with company name + job slug\n    /<a[^>]*href=\"[^\"]*jobs\\.ashbyhq\\.com\\/[^\"\\/]+\\/[^\"\\/]+\"[^>]*>/gi,\n    \n    // Lever style: /companyname/job-slug\n    /<a[^>]*href=\"[^\"]*jobs\\.lever\\.co\\/[^\"\\/]+\\/[^\"\\/]+\"[^>]*>/gi,\n    \n    // Workday style: /job/title/ID\n    /<a[^>]*href=\"[^\"]*myworkdayjobs\\.com[^\"]*\\/job\\/[^\"]*\"[^>]*>/gi,\n    \n    // Jobvite style: /jobs/job-id or /careers/jobs\n    /<a[^>]*href=\"[^\"]*jobvite\\.com\\/[^\"]*\\/jobs?\\/[^\"]*\"[^>]*>/gi,\n    /<a[^>]*href=\"[^\"]*\\/careers\\/jobs\\/[^\"]*\"[^>]*>/gi,\n    \n    // SmartRecruiters style: /companyname/job-id\n    /<a[^>]*href=\"[^\"]*jobs\\.smartrecruiters\\.com\\/[^\"\\/]+\\/\\d+\"[^>]*>/gi,\n    \n    // iCIMS style: /jobs/12345 or jobs.icims.com/jobs/12345\n    /<a[^>]*href=\"[^\"]*icims\\.com\\/jobs\\/\\d+\"[^>]*>/gi,\n    \n    // Workable style: /j/job-id\n    /<a[^>]*href=\"[^\"]*apply\\.workable\\.com\\/[^\"\\/]+\\/j\\/[^\"\\/]+\"[^>]*>/gi,\n    \n    // BambooHR style: /jobs/view.php?id=123\n    /<a[^>]*href=\"[^\"]*bamboohr\\.com\\/jobs\\/view\\.php\\?id=\\d+\"[^>]*>/gi,\n    \n    // Generic: any link with \"job\", \"position\", \"role\" in a list-like structure\n    /<li[^>]*>\\s*<a[^>]*href=\"[^\"]*\"[^>]*class=\"[^\"]*job[^\"]*\"[^>]*>/gi,\n    /<div[^>]*class=\"[^\"]*job[^\"]*\"[^>]*>.*?<a[^>]*href=\"[^\"]*\"[^>]*>/gi\n  ];\n  \n  let totalJobLinks = 0;\n  const jobLinksFoundByPattern = [];\n  \n  for (const pattern of jobLinkPatterns) {\n    const matches = html.match(pattern);\n    if (matches) {\n      totalJobLinks += matches.length;\n      jobLinksFoundByPattern.push(matches.length);\n    } else {\n      jobLinksFoundByPattern.push(0);\n    }\n  }\n  \n  // If page has 5+ job links, it's definitely a listing page, not a specific job\n  if (totalJobLinks >= 5) {\n    if (typeof globalThis !== 'undefined') {\n      globalThis.lastContentCheck = {\n        generalPageIndicators: 999, // Max out to show this was the deciding factor\n        jobSpecificIndicators: 0,\n        isGeneralPage: true,\n        hasApplyButton: false,\n        jobLinkCount: totalJobLinks,\n        detectionMethod: 'multiple_job_links'\n      };\n    }\n    return true;\n  }\n  \n  // Count indicators of general careers page\n  let generalPageIndicators = 0;\n  \n  const generalPhrases = [\n    'current openings',\n    'browse all jobs',\n    'view all positions',\n    'all open positions',\n    'explore opportunities',\n    'search all jobs',\n    'available positions',\n    'open roles',\n    'join our team',\n    'career opportunities',\n    'see all jobs',\n    'filter by',\n    'sort by',\n    'job search',\n    'find a job',\n    'no jobs found',\n    'job type',\n    'department filter',\n    'location filter',\n    'make a difference',\n    'ready to impact',\n    'we offer roles', // Plural \"roles\" is a giveaway\n    'careers at', // \"Careers at Company\" is generic\n    'work with us',\n    'working at',\n    'find your place' // Another generic phrase\n  ];\n  \n  for (const phrase of generalPhrases) {\n    if (htmlLower.includes(phrase)) {\n      generalPageIndicators++;\n    }\n  }\n  \n  // Check if there's text like \"X open roles\" or \"Y positions available\"\n  if (/\\d+\\s+(open\\s+)?(roles|positions|jobs|openings)/i.test(html)) {\n    generalPageIndicators += 3; // Strong indicator\n  }\n  \n  // Check for job listing structures (multiple job cards/links)\n  const jobListingPatterns = [\n    /class=\"[^\"]*job-list/gi,\n    /class=\"[^\"]*position-list/gi,\n    /class=\"[^\"]*opening-list/gi,\n    /<div[^>]*job-card/gi,\n    /class=\"[^\"]*job-item/gi,\n    /data-job-id=/gi\n  ];\n  \n  for (const pattern of jobListingPatterns) {\n    const matches = html.match(pattern);\n    if (matches && matches.length > 3) { // More than 3 matches suggests a listing page\n      generalPageIndicators += 3; // Increased weight\n    }\n  }\n  \n  // Check for page title indicating general careers page\n  const titleMatch = html.match(/<title>(.*?)<\\/title>/i);\n  if (titleMatch) {\n    const title = titleMatch[1].toLowerCase();\n    // Look for generic career titles\n    const genericTitlePatterns = [\n      /^careers at /i,\n      /^jobs at /i,\n      /^join /i,\n      /^work at /i,\n      /careers\\s*$/i,\n      /jobs\\s*$/i,\n      /^apply$/i,\n      /^find your place/i\n    ];\n    \n    for (const pattern of genericTitlePatterns) {\n      if (pattern.test(titleMatch[1])) {\n        generalPageIndicators += 2;\n        break;\n      }\n    }\n  }\n  \n  // Check for h1 with generic career messaging\n  const h1Match = html.match(/<h1[^>]*>(.*?)<\\/h1>/i);\n  if (h1Match) {\n    const h1Text = h1Match[1].replace(/<[^>]*>/g, '').toLowerCase();\n    if (h1Text.includes('careers at') || \n        h1Text.includes('join our team') || \n        h1Text.includes('jobs at') ||\n        h1Text.includes('find your place')) {\n      generalPageIndicators += 2;\n    }\n  }\n  \n  // Check breadcrumbs - if they end with generic terms like \"Apply\" or \"Careers\"\n  if (/<li><span>(apply|careers|jobs)<\\/span><\\/li>/i.test(html)) {\n    generalPageIndicators += 1;\n  }\n  \n  // Check for absence of job-specific content\n  const jobSpecificPhrases = [\n    'responsibilities',\n    'requirements',\n    'qualifications',\n    'about the role',\n    'what you\\'ll do',\n    'what we\\'re looking for',\n    'who you are',\n    'your background',\n    'job description',\n    'position summary',\n    'role overview',\n    'key responsibilities',\n    'required skills',\n    'preferred qualifications',\n    'minimum qualifications'\n  ];\n  \n  let jobSpecificIndicators = 0;\n  for (const phrase of jobSpecificPhrases) {\n    if (htmlLower.includes(phrase)) {\n      jobSpecificIndicators++;\n    }\n  }\n  \n  // Check if \"Apply\" button/form is present (strong indicator of specific job)\n  const hasApplyButton = /apply\\s+now|submit\\s+application|apply\\s+for\\s+this/i.test(html);\n  if (hasApplyButton) {\n    jobSpecificIndicators += 2;\n  }\n  \n  // Check if content is suspiciously short for a job description\n  const descriptionLength = html.length;\n  if (descriptionLength < 5000) { // Most job postings are longer\n    generalPageIndicators += 1;\n  }\n  \n  // Decision logic - LOWERED threshold from 4 to 3\n  // BUT: if jobLinkCount is high, that overrides everything\n  const isGeneralPage = generalPageIndicators >= 3 && jobSpecificIndicators < 3;\n  \n  // Store for debugging\n  if (typeof globalThis !== 'undefined') {\n    globalThis.lastContentCheck = {\n      generalPageIndicators,\n      jobSpecificIndicators,\n      isGeneralPage,\n      hasApplyButton,\n      jobLinkCount: totalJobLinks,\n      detectionMethod: isGeneralPage ? 'content_analysis' : 'not_general'\n    };\n  }\n  \n  return isGeneralPage;\n}\n\n/**\n * Detect platform from URL\n */\nfunction detectPlatformFromUrl(url) {\n  if (!url) return 'Unknown';\n  \n  if (url.includes('greenhouse.io') || url.includes('gh_jid=') || url.includes('gh_src=')) {\n    return 'Greenhouse';\n  } else if (url.includes('ashbyhq.com')) {\n    return 'Ashby';\n  } else if (url.includes('myworkdayjobs.com') || url.includes('workday.com')) {\n    return 'Workday';\n  } else if (url.includes('lever.co')) {\n    return 'Lever';\n  } else if (url.includes('jobvite.com')) {\n    return 'Jobvite';\n  } else if (url.includes('smartrecruiters.com')) {\n    return 'SmartRecruiters';\n  } else if (url.includes('icims.com')) {\n    return 'iCIMS';\n  } else if (url.includes('workable.com')) {\n    return 'Workable';\n  } else if (url.includes('bamboohr.com')) {\n    return 'BambooHR';\n  }\n  \n  return 'Unknown';\n}\n\n// ============================================================================\n// MAIN LOGIC - Extract and process job posting data\n// ============================================================================\n\n// Get inputs from previous nodes\nconst html = $input.first().json.data;\n\nlet url = $('Normalize URL').first().json.normalizedUrl || \n          $('Normalize URL').first().json.url ||\n          $input.first().json.url;\n\n// Get the final URL after redirects\nconst httpResponse = $input.first();\nlet finalUrl = httpResponse.json.url || url;\n\nif (httpResponse.json.headers && httpResponse.json.headers.location) {\n  finalUrl = httpResponse.json.headers.location;\n}\n\n// Fallback: search all items for URL if not found\nif (!url) {\n  const allItems = $input.all();\n  for (const item of allItems) {\n    if (item.json.normalizedUrl) {\n      url = item.json.normalizedUrl;\n      break;\n    }\n    if (item.json.url) {\n      url = item.json.url;\n      break;\n    }\n  }\n}\n\n// Detect platform\nconst platformFromUrl = detectPlatformFromUrl(url);\n\n// Check for redirects and expired pages EARLY\n// Note: HTTP Request node follows redirects automatically but doesn't expose final URL,\n// so we rely on content-based detection instead of URL comparison\nconst isRedirected = false; // Can't detect via URL comparison in n8n\nconst isGeneralContent = isGeneralCareersPageContent(html);\nconst isExpiredPage = isGeneralContent;\n\n// Get content check details for debugging\nconst contentCheckDetails = (typeof globalThis !== 'undefined' && globalThis.lastContentCheck) \n  ? globalThis.lastContentCheck \n  : { generalPageIndicators: 0, jobSpecificIndicators: 0, hasApplyButton: false, jobLinkCount: 0, detectionMethod: 'none' };\n\n// Handle missing HTML\nif (!html || html.length === 0) {\n  return {\n    url: url,\n    finalUrl: finalUrl,\n    jobTitle: null,\n    jobDescription: null,\n    platform: platformFromUrl,\n    isExpired: true,\n    redirectDetected: true,\n    error: 'Failed to fetch HTML content',\n    debug: {\n      message: 'NO HTML CONTENT',\n      htmlReceived: !!html,\n      htmlLength: html ? html.length : 0,\n      originalUrl: url,\n      finalUrl: finalUrl\n    }\n  };\n}\n\n// Handle expired/redirected pages\nif (isExpiredPage) {\n  return {\n    url: url,\n    finalUrl: finalUrl,\n    jobTitle: null,\n    jobDescription: null,\n    platform: platformFromUrl,\n    isExpired: true,\n    redirectDetected: isRedirected,\n    generalPageDetected: isGeneralContent,\n    // Debug info visible in n8n UI\n    debug: {\n      message: 'GENERAL CAREERS PAGE DETECTED',\n      originalUrl: url,\n      finalUrl: finalUrl,\n      urlsMatch: url === finalUrl,\n      isGeneralContent: isGeneralContent,\n      contentCheck: {\n        generalPageIndicators: contentCheckDetails.generalPageIndicators,\n        jobSpecificIndicators: contentCheckDetails.jobSpecificIndicators,\n        hasApplyButton: contentCheckDetails.hasApplyButton,\n        jobLinkCount: contentCheckDetails.jobLinkCount || 0,\n        detectionMethod: contentCheckDetails.detectionMethod || 'unknown',\n        threshold: 'generalIndicators >= 3 AND jobSpecificIndicators < 3 OR jobLinkCount >= 5'\n      }\n    }\n  };\n}\n\n// Initialize job data\nlet jobTitle = null;\nlet jobDescription = null;\n\n// Detect platform by fingerprints in HTML\nconst hasGhJid = url ? (url.includes('gh_jid=') || url.includes('gh_src=')) : false;\nconst hasGreenhouseData = html.includes('window.GREENHOUSE_DATA') || html.includes('greenhouse.io');\nconst hasAshbyData = html.includes('window.__ASHBY_JOB_POSTING_APP__') || html.includes('ashbyhq.com');\nconst hasWorkdayData = html.includes('myworkdayjobs.com') || html.includes('workday.com/wday');\nconst hasLeverData = html.includes('window._LEVER_STATE') || html.includes('lever.co');\nconst hasJobviteData = html.includes('jobvite.com') || html.includes('window.jobviteData');\nconst hasSmartRecruitersData = html.includes('smartrecruiters.com') || html.includes('SMART_RECRUITERS');\nconst hasICIMSData = html.includes('icims.com') || html.includes('iCIMS');\nconst hasWorkableData = html.includes('workable.com') || html.includes('apply.workable.com');\nconst hasBambooHRData = html.includes('bamboohr.com') || html.includes('BambooHR');\n\nconst isGreenhouse = hasGhJid || hasGreenhouseData || (url && url.includes('greenhouse.io'));\nconst isAshby = hasAshbyData || (url && url.includes('ashbyhq.com'));\nconst isWorkday = hasWorkdayData || (url && url.includes('myworkdayjobs.com'));\nconst isLever = hasLeverData || (url && url.includes('lever.co'));\nconst isJobvite = hasJobviteData || (url && url.includes('jobvite.com'));\nconst isSmartRecruiters = hasSmartRecruitersData || (url && url.includes('smartrecruiters.com'));\nconst isICIMS = hasICIMSData || (url && url.includes('icims.com'));\nconst isWorkable = hasWorkableData || (url && url.includes('workable.com'));\nconst isBambooHR = hasBambooHRData || (url && url.includes('bamboohr.com'));\n\n// ============================================================================\n// PLATFORM-SPECIFIC EXTRACTION\n// ============================================================================\n\n// Helper function to determine final platform name\nfunction getPlatformName() {\n  if (isGreenhouse) return 'Greenhouse';\n  if (isAshby) return 'Ashby';\n  if (isWorkday) return 'Workday';\n  if (isLever) return 'Lever';\n  if (isJobvite) return 'Jobvite';\n  if (isSmartRecruiters) return 'SmartRecruiters';\n  if (isICIMS) return 'iCIMS';\n  if (isWorkable) return 'Workable';\n  if (isBambooHR) return 'BambooHR';\n  return platformFromUrl;\n}\n\n// === GREENHOUSE EXTRACTION ===\nif (isGreenhouse) {\n  // Method 1: Try Greenhouse JSON data\n  const ghDataMatch = html.match(/window\\.GREENHOUSE_DATA\\s*=\\s*({.*?});/s);\n  if (ghDataMatch) {\n    try {\n      const ghData = JSON.parse(ghDataMatch[1]);\n      jobTitle = ghData.title || ghData.name;\n      jobDescription = ghData.content || ghData.description;\n    } catch (e) {\n      console.log('Failed to parse GREENHOUSE_DATA:', e);\n    }\n  }\n  \n  // Method 2: Try different Greenhouse data patterns\n  if (!jobTitle || !jobDescription) {\n    const patterns = [\n      /window\\.gon\\s*=\\s*({.*?});/s,\n      /window\\.GreenhouseConfig\\s*=\\s*({.*?});/s,\n      /window\\.jobPostingData\\s*=\\s*({.*?});/s\n    ];\n    \n    for (const pattern of patterns) {\n      const match = html.match(pattern);\n      if (match) {\n        try {\n          const data = JSON.parse(match[1]);\n          jobTitle = jobTitle || data.title || data.name || data.job?.title;\n          jobDescription = jobDescription || data.content || data.description || data.job?.description;\n        } catch (e) {}\n      }\n    }\n  }\n  \n  // Method 3: Extract job title from HTML\n  if (!jobTitle) {\n    const titleSelectors = [\n      /<h1[^>]*class=\"[^\"]*section-header[^\"]*\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"app-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"posting-headline\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*class=\"job-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*id=\"job-title\"[^>]*>(.*?)<\\/h1>/s,\n      /<h1[^>]*>(.*?)<\\/h1>/s\n    ];\n    \n    for (const selector of titleSelectors) {\n      const match = html.match(selector);\n      if (match) {\n        jobTitle = match[1].replace(/<[^>]*>/g, '').trim();\n        if (jobTitle && jobTitle.length > 3) break;\n      }\n    }\n  }\n  \n  // Method 4: Extract job description from HTML\n  if (!jobDescription) {\n    const descriptionSelectors = [\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<\\/div>\\s*<div[^>]*class=\"job-alert/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<div[^>]*class=\"divider\"/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<div[^>]*class=\"application--container\"/s,\n      /<div[^>]*class=\"job__description body\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*id=\"content\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"section-wrapper\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"posting-content\"[^>]*>(.*?)<\\/div>/s,\n      /<div[^>]*class=\"job-post-content\"[^>]*>(.*?)<\\/div>/s,\n      /<section[^>]*class=\"section\"[^>]*>(.*?)<\\/section>/gs,\n      /<div[^>]*class=\"section\"[^>]*>(.*?)<\\/div>/gs,\n      /<main[^>]*>(.*?)<\\/main>/s,\n      /<article[^>]*>(.*?)<\\/article>/s\n    ];\n    \n    for (const selector of descriptionSelectors) {\n      const match = html.match(selector);\n      if (match) {\n        let content = match[1].trim();\n        \n        // If using global flag, get all matches and concatenate\n        if (selector.flags && selector.flags.includes('g')) {\n          const allMatches = html.match(selector);\n          if (allMatches && allMatches.length > 0) {\n            content = allMatches.map(m => \n              m.replace(/<section[^>]*class=\"section\"[^>]*>|<\\/section>/g, '')\n               .replace(/<div[^>]*class=\"section\"[^>]*>|<\\/div>/g, '')\n            ).join('\\n\\n');\n          }\n        }\n        \n        // Clean up unwanted content\n        content = content.replace(/<form[^>]*>.*?<\\/form>/gs, '');\n        content = content.replace(/<div[^>]*class=\"[^\"]*eeoc[^\"]*\"[^>]*>.*?<\\/div>/gs, '');\n        \n        if (content && content.length > 200) {\n          jobDescription = content;\n          break;\n        }\n      }\n    }\n  }\n}\n\n// === ASHBY EXTRACTION ===\nif (isAshby) {\n  const ashbyMatch = html.match(/window\\.__ASHBY_JOB_POSTING_APP__\\s*=\\s*({.*?});/s);\n  if (ashbyMatch) {\n    try {\n      const appData = JSON.parse(ashbyMatch[1]);\n      jobTitle = appData.jobPosting?.title;\n      jobDescription = appData.jobPosting?.descriptionHtml || appData.jobPosting?.description;\n    } catch (e) {}\n  }\n}\n\n// === WORKDAY EXTRACTION ===\nif (isWorkday) {\n  const jsonLdMatches = html.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/gs);\n  if (jsonLdMatches) {\n    for (const match of jsonLdMatches) {\n      try {\n        const content = match.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/s)[1];\n        const jsonLd = JSON.parse(content);\n        if (jsonLd['@type'] === 'JobPosting') {\n          jobTitle = jsonLd.title;\n          jobDescription = jsonLd.description;\n          break;\n        }\n      } catch (e) {}\n    }\n  }\n}\n\n// === LEVER EXTRACTION ===\nif (isLever) {\n  const leverMatch = html.match(/window\\._LEVER_STATE\\s*=\\s*({.*?});/s);\n  if (leverMatch) {\n    try {\n      const leverData = JSON.parse(leverMatch[1]);\n      jobTitle = leverData.posting?.text;\n      jobDescription = leverData.posting?.descriptionHtml || leverData.posting?.description;\n    } catch (e) {}\n  }\n  \n  if (!jobTitle) {\n    const titleMatch = html.match(/<h2[^>]*class=\"posting-headline\"[^>]*>(.*?)<\\/h2>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"section page-centered\"[^>]*>(.*?)<div class=\"section page-centered last-section-apply\">/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// === JOBVITE EXTRACTION ===\nif (isJobvite) {\n  // Try Jobvite data structure\n  const jobviteMatch = html.match(/window\\.jobviteData\\s*=\\s*({.*?});/s);\n  if (jobviteMatch) {\n    try {\n      const jobviteData = JSON.parse(jobviteMatch[1]);\n      jobTitle = jobviteData.jobTitle || jobviteData.title;\n      jobDescription = jobviteData.description || jobviteData.jobDescription;\n    } catch (e) {}\n  }\n  \n  // Fallback to HTML structure\n  if (!jobTitle) {\n    const titleMatch = html.match(/<h1[^>]*class=\"[^\"]*jv-job-detail-title[^\"]*\"[^>]*>(.*?)<\\/h1>/s) ||\n                       html.match(/<h2[^>]*class=\"[^\"]*job-title[^\"]*\"[^>]*>(.*?)<\\/h2>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"[^\"]*jv-job-detail-description[^\"]*\"[^>]*>(.*?)<\\/div>/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// === SMARTRECRUITERS EXTRACTION ===\nif (isSmartRecruiters) {\n  // Try SmartRecruiters data structure\n  const srMatch = html.match(/window\\.__SMART_RECRUITERS__\\s*=\\s*({.*?});/s);\n  if (srMatch) {\n    try {\n      const srData = JSON.parse(srMatch[1]);\n      jobTitle = srData.jobAd?.name || srData.name;\n      jobDescription = srData.jobAd?.description || srData.description;\n    } catch (e) {}\n  }\n  \n  // Fallback to HTML structure\n  if (!jobTitle) {\n    const titleMatch = html.match(/<h1[^>]*>(.*?)<\\/h1>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"[^\"]*job-description[^\"]*\"[^>]*>(.*?)<\\/div>/s) ||\n                       html.match(/<section[^>]*class=\"[^\"]*job-section[^\"]*description[^\"]*\"[^>]*>(.*?)<\\/section>/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// === iCIMS EXTRACTION ===\nif (isICIMS) {\n\n    // SPECIAL CASE: Check if this is an iCIMS iframe wrapper page\n  const iframeMatch = html.match(/icimsFrame\\.src\\s*=\\s*['\"]([^'\"]+)['\"]/);\n  if (iframeMatch) {\n    // This page is just a wrapper - the actual job is in an iframe\n    const iframeUrl = iframeMatch[1].replace(/\\\\\\//g, '/'); // Unescape the URL\n    \n    return {\n      url: url,\n      finalUrl: finalUrl,\n      jobTitle: null,\n      jobDescription: null,\n      platform: 'iCIMS',\n      isExpired: false,\n      redirectDetected: false,\n      generalPageDetected: false,\n      requiresIframeRefetch: true,\n      iframeUrl: iframeUrl,\n      debug: {\n        message: 'iCIMS IFRAME DETECTED - Need to fetch iframe URL',\n        originalUrl: url,\n        iframeUrl: iframeUrl,\n        instruction: 'Refetch the iframeUrl to get actual job content'\n      }\n    };\n  }\n\n  \n  // iCIMS uses a simple structure\n  if (!jobTitle) {\n    const titleMatch = html.match(/<h1[^>]*class=\"[^\"]*iCIMS_InfoMsg[^\"]*\"[^>]*>(.*?)<\\/h1>/s) ||\n                       html.match(/<span[^>]*class=\"[^\"]*iCIMS_JobTitle[^\"]*\"[^>]*>(.*?)<\\/span>/s) ||\n                       html.match(/<h2[^>]*class=\"[^\"]*iCIMS_JobTitle[^\"]*\"[^>]*>(.*?)<\\/h2>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"[^\"]*iCIMS_InfoMsg[^\"]*job[^\"]*description[^\"]*\"[^>]*>(.*?)<\\/div>/s) ||\n                       html.match(/<span[^>]*class=\"[^\"]*iCIMS_InfoField[^\"]*\"[^>]*>(.*?)<\\/span>/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// === WORKABLE EXTRACTION ===\nif (isWorkable) {\n  // Try Workable's data structure\n  if (!jobTitle) {\n    const titleMatch = html.match(/<h1[^>]*>(.*?)<\\/h1>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"[^\"]*job-description[^\"]*\"[^>]*>(.*?)<\\/div>/s) ||\n                       html.match(/<section[^>]*class=\"[^\"]*description[^\"]*\"[^>]*>(.*?)<\\/section>/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// === BAMBOOHR EXTRACTION ===\nif (isBambooHR) {\n  // BambooHR structure\n  if (!jobTitle) {\n    const titleMatch = html.match(/<h1[^>]*class=\"[^\"]*BambooHR-ATS-Title[^\"]*\"[^>]*>(.*?)<\\/h1>/s) ||\n                       html.match(/<h1[^>]*>(.*?)<\\/h1>/s);\n    if (titleMatch) jobTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();\n  }\n  \n  if (!jobDescription) {\n    const descMatch = html.match(/<div[^>]*class=\"[^\"]*BambooHR-ATS-Description[^\"]*\"[^>]*>(.*?)<\\/div>/s) ||\n                       html.match(/<div[^>]*id=\"job-description\"[^>]*>(.*?)<\\/div>/s);\n    if (descMatch) jobDescription = descMatch[1].trim();\n  }\n}\n\n// ============================================================================\n// GENERIC FALLBACKS - For any platform\n// ============================================================================\n\nif (!jobTitle || !jobDescription) {\n  // Try JSON-LD\n  const jsonLdMatches = html.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/gs);\n  if (jsonLdMatches) {\n    for (const match of jsonLdMatches) {\n      try {\n        const content = match.match(/<script type=\"application\\/ld\\+json\">(.*?)<\\/script>/s)[1];\n        const jsonLd = JSON.parse(content);\n        if (jsonLd['@type'] === 'JobPosting') {\n          jobTitle = jobTitle || jsonLd.title;\n          jobDescription = jobDescription || jsonLd.description;\n        }\n      } catch (e) {}\n    }\n  }\n  \n  // Try Open Graph meta tags\n  if (!jobTitle) {\n    const ogTitleMatch = html.match(/<meta property=\"og:title\" content=\"([^\"]*)\"/);\n    if (ogTitleMatch) jobTitle = ogTitleMatch[1];\n  }\n  \n  if (!jobDescription) {\n    const ogDescMatch = html.match(/<meta property=\"og:description\" content=\"([^\"]*)\"/);\n    if (ogDescMatch) jobDescription = ogDescMatch[1];\n  }\n  \n  // Try regular meta tags\n  if (!jobDescription) {\n    const metaDescMatch = html.match(/<meta name=\"description\" content=\"([^\"]*)\"/);\n    if (metaDescMatch) jobDescription = metaDescMatch[1];\n  }\n  \n  // Try page title as last resort\n  if (!jobTitle) {\n    const pageTitleMatch = html.match(/<title>(.*?)<\\/title>/);\n    if (pageTitleMatch) {\n      jobTitle = pageTitleMatch[1]\n        .replace(/\\s*[-|]\\s*(Ashby|Greenhouse|Workday|Lever|Jobs|Careers).*$/i, '')\n        .trim();\n    }\n  }\n}\n\n// Debug logging\nif (isGreenhouse) {\n  console.log('Greenhouse extraction results:');\n  console.log('Title found:', !!jobTitle);\n  console.log('Description found:', !!jobDescription);\n  console.log('Description length:', jobDescription ? jobDescription.length : 0);\n}\n\n// ============================================================================\n// CHECK IF EXTRACTION FAILED (likely expired/invalid page)\n// ============================================================================\n\n// If we couldn't extract either title or description, mark as expired\nif (!jobTitle || !jobDescription || jobDescription.length < 100) {\n  if (typeof globalThis !== 'undefined') {\n    globalThis.lastContentCheck = {\n      generalPageIndicators: 0,\n      jobSpecificIndicators: 0,\n      isGeneralPage: true,\n      hasApplyButton: false,\n      jobLinkCount: 0,\n      detectionMethod: 'extraction_failed'\n    };\n  }\n  \n  return {\n    url: url,\n    finalUrl: finalUrl,\n    jobTitle: jobTitle,\n    jobDescription: jobDescription,\n    platform: getPlatformName(),\n    isExpired: true,\n    redirectDetected: false,\n    generalPageDetected: false,\n    debug: {\n      message: 'EXTRACTION FAILED - No valid job content found',\n      originalUrl: url,\n      finalUrl: finalUrl,\n      urlsMatch: url === finalUrl,\n      htmlLength: html ? html.length : 0,\n      titleFound: !!jobTitle,\n      descriptionFound: !!jobDescription,\n      descriptionLength: jobDescription ? jobDescription.length : 0,\n      platformDetected: getPlatformName(),\n      contentCheck: {\n        generalPageIndicators: 0,\n        jobSpecificIndicators: 0,\n        hasApplyButton: false,\n        jobLinkCount: 0,\n        detectionMethod: 'extraction_failed',\n        passedCheck: false\n      }\n    }\n  };\n}\n\n// ============================================================================\n// RETURN RESULTS\n// ============================================================================\n\nreturn {\n  url: url,\n  finalUrl: finalUrl,\n  jobTitle: jobTitle,\n  jobDescription: jobDescription,\n  platform: getPlatformName(),\n  isExpired: false,\n  redirectDetected: false,\n  generalPageDetected: false,\n  requiresIframeRefetch: false,\n  // Debug info visible in n8n UI\n  debug: {\n    originalUrl: url,\n    finalUrl: finalUrl,\n    urlsMatch: url === finalUrl,\n    htmlLength: html ? html.length : 0,\n    titleFound: !!jobTitle,\n    descriptionFound: !!jobDescription,\n    descriptionLength: jobDescription ? jobDescription.length : 0,\n    platformDetected: getPlatformName(),\n    contentCheck: {\n      generalPageIndicators: contentCheckDetails.generalPageIndicators,\n      jobSpecificIndicators: contentCheckDetails.jobSpecificIndicators,\n      hasApplyButton: contentCheckDetails.hasApplyButton,\n      jobLinkCount: contentCheckDetails.jobLinkCount || 0,\n      detectionMethod: contentCheckDetails.detectionMethod || 'none',\n      passedCheck: !isGeneralContent\n    }\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1488,
-        192
+        -1568,
+        144
       ],
       "id": "2606cc9d-e500-47b2-bad6-b714b6033af5",
       "name": "Extract Job Info"
@@ -379,40 +379,6 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "9e2f57fb-d16e-45c1-a63d-76f00aa192fe",
-              "leftValue": "={{$json.jobDescription}}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -1328,
-        192
-      ],
-      "id": "fefd8055-16cd-4a75-a567-20743351d049",
-      "name": "IsAvailable"
-    },
-    {
-      "parameters": {
         "operation": "create",
         "base": {
           "__rl": true,
@@ -433,15 +399,15 @@
           "value": {
             "Company": "={{ $json.company }}",
             "Position": "={{ $('Extract Job Info').item.json.jobTitle }}",
-            "Job Description Link": "={{ $('Normalize URL').item.json.url}}",
-            "Source": "AI Agent",
+            "Job Description Link": "={{ $('Normalize URL').first().json.url }}",
+            "Source": "={{ $json.source }}",
             "Job Description Text": "={{ $('Extract Job Info').item.json.jobDescription }}",
-            "Status": "={{ $if($json.relevant, \"Found by Agent\", \"Ignore\" ) }}",
-            "Notes": "={{ $json.reasoning }}",
-            "Green Flags": "={{ $json.green_flags.join(\"; \") }}",
-            "Red Flags": "={{ $json.red_flags.join(\"; \") }}",
+            "Status": "={{ $json.status }}",
+            "Notes": "={{ $('Cleanup JSON').item.json.reasoning }}",
+            "Red Flags": "={{ $json.red_flags }}",
             "Platform": "={{ $('Extract Job Info').item.json.platform }}",
-            "Normalized URL": "={{ $('Normalize URL').item.json.normalizedUrl }}"
+            "Normalized URL": "={{ $('Normalize URL').first().json.normalizedUrl }}",
+            "Green Flags": "={{ $json.green_flags }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -855,8 +821,8 @@
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
       "position": [
-        -1152,
-        -304
+        -320,
+        336
       ],
       "id": "b13bdad9-89d8-4dc4-aa79-b7c24350046e",
       "name": "Add New JD",
@@ -1360,7 +1326,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1312,
+        -1328,
         -80
       ],
       "id": "873494b2-be76-4094-8aad-1ab6019f6eba",
@@ -1370,9 +1336,9 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "claude-sonnet-4-20250514",
+          "value": "claude-sonnet-4-5-20250929",
           "mode": "list",
-          "cachedResultName": "claude-sonnet-4-20250514"
+          "cachedResultName": "claude-sonnet-4-5-20250929"
         },
         "messages": {
           "values": [
@@ -1389,8 +1355,8 @@
       "type": "@n8n/n8n-nodes-langchain.anthropic",
       "typeVersion": 1,
       "position": [
-        -1056,
-        176
+        -1104,
+        336
       ],
       "id": "149d56c7-7fce-444e-98b9-999f2899b7a0",
       "name": "Analyze Job Posting",
@@ -1599,8 +1565,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -576,
-        160
+        -464,
+        336
       ],
       "id": "ee633190-1db6-4741-bfe5-d707ba142d82",
       "name": "Add new JD",
@@ -1631,14 +1597,14 @@
             "job_description_link": "={{ $('Normalize URL').first().json.url }}",
             "platform": "={{ $('Extract Job Info').item.json.platform }}",
             "job_description_text": "=N/A",
-            "notes": "=",
+            "notes": "={{ $('Extract Job Info').item.json.isExpired \n    ? $('Extract Job Info').item.json.debug\n    : $('Validate Role Keywords').first().json.filterReasoning\n}}",
             "green_flags": "=",
             "red_flags": "=",
             "date_identified": "={{  $now.format('MM/dd/yyyy') }}",
             "position": "={{ $('Normalize URL').first().json.pageTitle }}",
             "company": "Unknown",
-            "status": "Ignore - Not Found",
-            "source": "AI Agent"
+            "source": "AI Agent",
+            "status": "={{  $('Extract Job Info').item.json.generalPageDetected\n    ? 'Ignore - Listing Page' \n    : ( $('Validate Role Keywords').first().json.isValid\n      ? 'Ignore - Not Found'      \n      : 'Ignore - Keywords'\n      )  \n}}"
           },
           "matchingColumns": [
             "id"
@@ -1807,8 +1773,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -576,
-        0
+        -656,
+        48
       ],
       "id": "c28cfb93-a92a-45bc-8191-2337b807645b",
       "name": "Add invalid JD",
@@ -1860,10 +1826,352 @@
       "alwaysOutputData": true,
       "credentials": {
         "postgres": {
+          "id": "C7c4IpIHOXEL7fNA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "applications",
+          "mode": "list",
+          "cachedResultName": "applications"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "normalized_url": "={{ $('Normalize URL').first().json.normalizedUrl }}",
+            "job_description_link": "={{ $('Normalize URL').first().json.url }}",
+            "platform": "={{ $('Extract Job Info').first().json.platform }}",
+            "job_description_text": "=N/A",
+            "notes": "=",
+            "date_identified": "={{  $now.format('MM/dd/yyyy') }}",
+            "position": "={{ $json.job_title }}",
+            "status": "Ignore - Not Found",
+            "source": "AI Agent",
+            "company": "={{ $json.company }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "position",
+              "displayName": "position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date_identified",
+              "displayName": "date_identified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date_applied",
+              "displayName": "date_applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decision_date",
+              "displayName": "decision_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_description_link",
+              "displayName": "job_description_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_description_text",
+              "displayName": "job_description_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "green_flags",
+              "displayName": "green_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "red_flags",
+              "displayName": "red_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "normalized_url",
+              "displayName": "normalized_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -464,
+        160
+      ],
+      "id": "b46d3068-fb3e-4212-a9a7-d7b7ccfefd31",
+      "name": "Add Missing JD",
+      "credentials": {
+        "postgres": {
           "id": "idNumber",
           "name": "Postgres account"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9e2f57fb-d16e-45c1-a63d-76f00aa192fe",
+              "leftValue": "={{ $json.valid_entry }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        320
+      ],
+      "id": "0d5fccd6-bd68-4835-bcd4-b3485fc0bd22",
+      "name": "Is Expired JD?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input data\nconst pageTitle = $input.first().json.jobTitle || '';\nconst url = $input.first().json.url || '';\nconst normalizedUrl = $input.first().json.debug.finalUrl || '';\n\n// Convert to lowercase for case-insensitive matching\nconst titleLower = pageTitle.toLowerCase();\n\n// Define valid seniority indicators\nconst validSeniorityPatterns = [\n  'director',\n  'lead ',\n  'head of',\n  'vp ',\n  'vice president',\n  'vice-president',\n  'chief',\n  'senior director',\n  'principal',\n  'staff' // Often used for senior IC roles\n];\n\n// Define invalid role types/functions\nconst invalidRolePatterns = [\n  'developer advocate', // IC\n  'product management', // PM, not PMM\n  'product manager', // PM, not PMM\n  'senior product marketing manager', // Too junior\n  'email marketing',\n  'educator',\n  'training',\n  'design',\n  'designer',\n  'ux',\n  'ui/ux',\n  'demand',\n  'partnership',\n  'growth marketer',\n  'growth marketing',\n  'sales',\n  'account executive',\n  'software engineer',\n  'solutions engineer',\n  'operations',\n  'sdr',\n  'engineer',\n  'engineering',\n  'developer', // Unless it's \"developer relations\"\n  'data scientist',\n  'analyst',\n  'coordinator',\n  'associate',\n  'specialist',\n  'intern',\n  'temporary',\n  'contract',\n  'project manager',\n  'entry level'\n];\n\n// Check for valid seniority level\nlet hasValidSeniority = false;\nlet matchedSeniority = '';\n\nfor (const pattern of validSeniorityPatterns) {\n  if (titleLower.includes(pattern)) {\n    hasValidSeniority = true;\n    matchedSeniority = pattern;\n    break;\n  }\n}\n\n// Check for invalid role types\nlet hasInvalidRole = false;\nlet matchedInvalidPattern = '';\n\nfor (const pattern of invalidRolePatterns) {\n  if (titleLower.includes(pattern)) {\n    // Special case: \"Developer Relations\" or \"Developer Marketing\" is valid\n    if (pattern === 'developer' && \n        (titleLower.includes('developer relations') || \n         titleLower.includes('developer marketing') ||\n         titleLower.includes('developer platform') ||\n         titleLower.includes('developer advocacy'))) {\n      continue;\n    }\n    \n    hasInvalidRole = true;\n    matchedInvalidPattern = pattern;\n    break;\n  }\n}\n\n// Determine if the title is valid\nconst isValid = hasValidSeniority && !hasInvalidRole;\n\n// Create reasoning for debugging\nlet reasoning = '';\nif (!hasValidSeniority) {\n  reasoning = 'Rejected: No senior-level title found (need Director, VP, Head of, etc.)';\n} else if (hasInvalidRole) {\n  reasoning = `Rejected: Invalid role type detected (\"${matchedInvalidPattern}\")`;\n} else {\n  reasoning = `Accepted: Valid senior role (\"${matchedSeniority}\")`;\n}\n\n// Return the result with all original data plus validation\nreturn {\n  url: url,\n  normalizedUrl: normalizedUrl,\n  pageTitle: pageTitle,\n  isValid: isValid,\n  hasValidSeniority: hasValidSeniority,\n  hasInvalidRole: hasInvalidRole,\n  matchedSeniority: matchedSeniority,\n  matchedInvalidPattern: matchedInvalidPattern,\n  filterReasoning: reasoning\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        160
+      ],
+      "id": "7c0efa8c-e7f0-4fc9-acb7-71f9fa3f5415",
+      "name": "Validate Role Keywords"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9e2f57fb-d16e-45c1-a63d-76f00aa192fe",
+              "leftValue": "={{$input.item}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2e54b056-7898-440f-9888-2c49a238a3a1",
+              "leftValue": "={{ $json.isValid }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f728c45e-8b34-4d74-9009-fc6c20993ef0",
+              "leftValue": "={{ $('Extract Job Info').item.json.isExpired }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1056,
+        160
+      ],
+      "id": "77ea997c-d716-496b-8c6f-073f8e776a5b",
+      "name": "Is Valid and Available?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8e3c5320-fb0e-4bfa-9acd-2f3170b66217",
+              "leftValue": "={{ $json.requiresIframeRefetch }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1408,
+        144
+      ],
+      "id": "258df318-5f7e-454d-a5e5-7a09c155cab9",
+      "name": "Needs Iframe Refresh"
     }
   ],
   "pinData": {},
@@ -1901,7 +2209,7 @@
       "main": [
         [
           {
-            "node": "Add new JD",
+            "node": "Is Expired JD?",
             "type": "main",
             "index": 0
           }
@@ -1945,7 +2253,7 @@
       "main": [
         [
           {
-            "node": "IsAvailable",
+            "node": "Needs Iframe Refresh",
             "type": "main",
             "index": 0
           }
@@ -1969,27 +2277,15 @@
         []
       ]
     },
-    "IsAvailable": {
+    "Add New JD": {
       "main": [
         [
           {
-            "node": "Analyze Job Posting",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Add invalid JD",
+            "node": "Return_New",
             "type": "main",
             "index": 0
           }
         ]
-      ]
-    },
-    "Add New JD": {
-      "main": [
-        []
       ]
     },
     "Add Invalid JD": {
@@ -2037,7 +2333,7 @@
       "main": [
         [
           {
-            "node": "Return_New",
+            "node": "Add New JD",
             "type": "main",
             "index": 0
           }
@@ -2065,13 +2361,89 @@
           }
         ]
       ]
+    },
+    "Add Missing JD": {
+      "main": [
+        [
+          {
+            "node": "Return_Existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Expired JD?": {
+      "main": [
+        [
+          {
+            "node": "Add Missing JD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add new JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Role Keywords": {
+      "main": [
+        [
+          {
+            "node": "Is Valid and Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid and Available?": {
+      "main": [
+        [
+          {
+            "node": "Analyze Job Posting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add invalid JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Iframe Refresh": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate Role Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "9e7cdaba-b305-4526-8758-2481f0a8875f",
+  "versionId": "7de9f294-67d6-4efa-afea-43207cb082f7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "0bae1fab76f5b3d7d761d2213eecaaf39f2590bd0b5cd104d1482f6fd0bab96b"
